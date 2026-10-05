@@ -1,19 +1,36 @@
 {{- /*
-  Bilder im Text: nur Dateien aus dem Ordner der Seite (Page Bundle).
-  Erlaubt sind "name.jpg" und die Pfadform, die Pages CMS schreibt
-  ("/artikel/<ordner>/name.jpg"). Jedes Bild wird in feste Breiten und WebP
-  umgerechnet; das Original wird nicht veröffentlicht (publishResources=false).
+  Bilder im Text: nur Dateien aus Seitenordnern (Page Bundles) im Inhalts-Repository.
+  Erlaubt sind "name.jpg" (eigener Ordner) und die Pfadform, die Pages CMS
+  schreibt ("/artikel/<ordner>/name.jpg") – auch aus dem Ordner eines anderen
+  Artikels. Alles andere (fremde Server, Pfade ohne Bundle) bricht den Build ab.
+  Jedes Bild wird in feste Breiten und WebP umgerechnet; Originale werden nicht
+  veröffentlicht (publishResources=false).
 */ -}}
 {{- $p := .PageInner -}}
 {{- $d := .Destination -}}
-{{- $prefix := printf "/%s" (replace $p.File.Dir "\\" "/") -}}
-{{- $name := strings.TrimPrefix $prefix $d -}}
-{{- if not (findRE `^[a-z0-9-]+\.(jpg|png|webp)$` $name 1) -}}
-  {{- errorf "%s: Bild %q muss im Ordner der Seite liegen (%sname.jpg oder name.jpg)" $p.File.Path $d $prefix -}}
+{{- $own := printf "/%s" (replace $p.File.Dir "\\" "/") -}}
+{{- $img := false -}}
+{{- if findRE `^[a-z0-9-]+\.(jpg|png|webp)$` $d 1 -}}
+  {{- $img = $p.Resources.Get $d -}}
+{{- else -}}
+  {{- with findRESubmatch `^/((?:[a-z0-9-]+/)+)([a-z0-9-]+\.(?:jpg|png|webp))$` $d 1 -}}
+    {{- $dir := index (index . 0) 1 -}}
+    {{- $name := index (index . 0) 2 -}}
+    {{- if eq (printf "/%s" $dir) $own -}}
+      {{- $img = $p.Resources.Get $name -}}
+    {{- else -}}
+      {{- /* anderer Ordner: Bundle in irgendeiner Sprache suchen */ -}}
+      {{- $path := printf "/%s" (strings.TrimSuffix "/" $dir) -}}
+      {{- range hugo.Sites -}}
+        {{- if not $img -}}
+          {{- with .GetPage $path }}{{ with .Resources.Get $name }}{{ $img = . }}{{ end }}{{ end -}}
+        {{- end -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
 {{- end -}}
-{{- $img := $p.Resources.Get $name -}}
 {{- if or (not $img) (ne $img.ResourceType "image") -}}
-  {{- errorf "%s: Bild %q nicht im Ordner %s gefunden" $p.File.Path $d $p.File.Dir -}}
+  {{- errorf "%s: Bild %q nicht gefunden – erlaubt sind Bilder aus Artikelordnern im Inhalts-Repository" $p.File.Path $d -}}
 {{- end -}}
 
 {{- $opts := "webp q80 photo" -}}
