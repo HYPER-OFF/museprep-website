@@ -142,6 +142,28 @@ class CheckOutputTest(unittest.TestCase):
         self.page('<script src="/js/app.js" defer>alert(1)</script>')
         self.assertFails("<script> mit Inline-Inhalt", count=None, elements=allowed)
 
+    def test_allowlisted_element_with_patterns(self):
+        js = "quiz/klanglabor.min." + "a" * 64 + ".js"
+        self.write(js, "")
+        allowed = [{"tag": "script", "attrs": {"src": "^/quiz/klanglabor\\.min\\.[0-9a-f]{64}\\.js$",
+                                               "integrity": "^sha256-[A-Za-z0-9+/]{43}=$", "defer": ""}}]
+        ok = '<script src="/%s" integrity="sha256-%s=" defer></script>' % (js, "B" * 43)
+        self.page(ok)
+        self.assertEqual(self.report(elements=allowed).violations, [])
+        for html in ('<script src="/quiz/klanglabor.min.%s.js" integrity="sha256-%s=" defer></script>' % ("z" * 64, "B" * 43),
+                     '<script src="/%s" integrity="sha256-%s=" defer type="module"></script>' % (js, "B" * 43),
+                     '<script src="/%s" defer></script>' % js,
+                     '<script src="/%s" integrity="sha256-%s=" defer>alert(1)</script>' % (js, "B" * 43)):
+            with self.subTest(html=html):
+                self.page(html)
+                self.assertFails("<script>", count=None, elements=allowed)
+
+    def test_javascript_only_in_quiz(self):
+        self.write("quiz/app.js", "")
+        self.assertEqual(self.report().violations, [])
+        self.write("js/app.js", "")
+        self.assertFails("JavaScript nur unter /quiz/")
+
     def test_style_and_base(self):
         for html, expected in [('<p style="color:red">x</p>', "style-Attribut"),
                                ("<style>p{color:red}</style>", "<style> ist nicht erlaubt"),
@@ -229,7 +251,6 @@ class CheckOutputTest(unittest.TestCase):
         for rel, expected in [("info.php", "Dateityp '.php'"),
                               ("artikel/notenlesen/original.jpg", "Dateityp '.jpg'"),
                               ("artikel/notenlesen/skizze.png", "PNG nur unter /images/"),
-                              ("js/app.js", "Dateityp '.js'"),
                               ("cgi-bin/run", "Dateityp 'run'"),
                               ("artikel/.env", "versteckte Datei")]:
             with self.subTest(rel=rel):

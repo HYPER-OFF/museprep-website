@@ -1,0 +1,8 @@
+{{- /* Adresse der Klanglabor-App (gibt es nur auf Deutsch). */ -}}
+{{- $url := "" -}}
+{{- range hugo.Sites -}}
+  {{- if eq .Language.Lang "de" -}}
+    {{- with .GetPage "/quiz" }}{{ with .OutputFormats.Get "klanglabor" }}{{ $url = .RelPermalink }}{{ end }}{{ end -}}
+  {{- end -}}
+{{- end -}}
+{{- return $url -}}

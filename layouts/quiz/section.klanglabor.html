@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Klanglabor · {{ site.Title }}</title>
+<meta name="description" content="Interaktive Kapitel zum verminderten Septakkord: bauen, hören, auflösen, umdeuten.">
+<meta name="theme-color" content="#191970">
+{{- with .OutputFormats.Get "klanglabor" }}
+<link rel="canonical" href="{{ .Permalink }}">
+{{- end }}
+<link rel="preload" href="/fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/newsreader-latin.woff2" as="font" type="font/woff2" crossorigin>
+{{- with resources.Get "images/icon.png" }}
+<link rel="icon" type="image/png" sizes="32x32" href="{{ (.Process "resize 32x32 png").RelPermalink }}">
+{{- end }}
+{{- $css := resources.Get "klanglabor/style.css" | resources.Copy "quiz/klanglabor.css" | minify | fingerprint }}
+<link rel="stylesheet" href="{{ $css.RelPermalink }}" integrity="{{ $css.Data.Integrity }}">
+</head>
+<body>
+{{- $logo := (resources.Get "images/logo.png").Process "resize x120 webp q90 drawing" }}
+{{- $impressum := site.GetPage "/impressum" }}
+{{- $datenschutz := site.GetPage "/datenschutz" }}
+<div id="app" data-logo="{{ $logo.RelPermalink }}" data-back="{{ .RelPermalink }}"
+  data-impressum="{{ with $impressum }}{{ .RelPermalink }}{{ end }}"
+  data-datenschutz="{{ with $datenschutz }}{{ .RelPermalink }}{{ end }}"></div>
+<noscript><p class="noscript">Das Klanglabor braucht JavaScript. <a href="{{ .RelPermalink }}">Zurück zur Quiz-Übersicht</a></p></noscript>
+{{- $files := slice }}
+{{- range slice "util" "theory" "audio" "widgets" "lessons" "arcade" "app" }}
+  {{- $files = $files | append (resources.Get (printf "klanglabor/js/%s.js" .)) }}
+{{- end }}
+{{- $js := $files | resources.Concat "quiz/klanglabor.js" | minify | fingerprint }}
+<script src="{{ $js.RelPermalink }}" integrity="{{ $js.Data.Integrity }}" defer></script>
+</body>
+</html>

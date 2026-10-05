@@ -1,0 +1,44 @@
+{{ define "main" }}
+{{- $lab := partial "klanglabor-url.html" . -}}
+<div class="soft-hero">
+  <div class="soft-hero-glyph" aria-hidden="true">♯</div>
+  <h1>{{ .Title }}</h1>
+  {{- with .Description }}<p>{{ . }}</p>{{ end }}
+</div>
+<div class="quiz-hub">
+  {{- with $lab }}
+  <section class="lab-card">
+    <div class="lab-glyph" aria-hidden="true">°7</div>
+    <div class="lab-text">
+      <div class="lab-eyebrow">{{ upper (T "lab_eyebrow") }}</div>
+      <h2>{{ T "lab_title" }}</h2>
+      <p>{{ T "lab_text" }}</p>
+      {{- with T "lab_only_de" }}<p class="lab-note">{{ . }}</p>{{ end }}
+      <p class="lab-note">{{ T "lab_note" }}</p>
+      <a class="btn btn-gold" href="{{ . }}" hreflang="de">{{ T "lab_cta" }} <span aria-hidden="true">→</span></a>
+    </div>
+  </section>
+  {{- end }}
+  {{- with .Content }}<div class="prose quiz-intro">{{ . }}</div>{{ end }}
+  <section class="quiz-list">
+    <div class="section-head">
+      <h2>{{ T "more_quizzes" }}</h2>
+      <span class="glyphs" aria-hidden="true">♩ ♪ ♫</span>
+    </div>
+    {{- with .Pages.ByDate.Reverse }}
+    <div class="cards">
+      {{- range $i, $p := . }}
+      <a class="card" href="{{ $p.RelPermalink }}">
+        <span class="card-top"><span class="card-num" aria-hidden="true">{{ printf "%02d" (add $i 1) }}</span><span class="card-glyph" aria-hidden="true">?</span></span>
+        <h3>{{ $p.Title }}</h3>
+        {{- with $p.Description }}<p>{{ . }}</p>{{ end }}
+        <p class="card-meta">{{ T "questions" (len $p.Params.fragen) }}</p>
+      </a>
+      {{- end }}
+    </div>
+    {{- else }}
+    <p class="empty">{{ T "no_quizzes" }}</p>
+    {{- end }}
+  </section>
+</div>
+{{ end }}

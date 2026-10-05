@@ -54,6 +54,7 @@ Workflow übergibt den Pfad mit `--contentDir`.
 | `layouts/_shortcodes/` | sperrt Hugos eingebaute Shortcodes |
 | `assets/css/main.css` | natives CSS nach dem Claude-Design |
 | `assets/images/` | Logo und Icon, werden beim Build neu kodiert |
+| `assets/klanglabor/` | Klanglabor-App (JavaScript, CSS), wird gebündelt und mit Prüfsumme ausgeliefert |
 | `i18n/` | Oberflächentexte Deutsch/Englisch |
 | `static/fonts/` | Schriften als WOFF2 mit Lizenzen |
 | `scripts/` | Hugo-Installation, lokaler Build, Prüfskripte, Bericht |
@@ -77,6 +78,7 @@ Workflow übergibt den Pfad mit `--contentDir`.
   Bericht in [`docs/MIGRATION.md`](docs/MIGRATION.md).
 - Paket 9: Entwürfe für Impressum und Datenschutzerklärung (im
   Inhalts-Repository), Umstellungs-Checkliste in [`docs/GO-LIVE.md`](docs/GO-LIVE.md).
+- Quiz: Menüpunkt „Quiz“ mit dem Klanglabor und eigenen Quizzen aus Pages CMS.
 
 ## Eingangsprüfung
 
@@ -123,3 +125,25 @@ sie in Markdown um und schreibt außerdem den Weiterleitungsblock in
 lädt es auch die Bilder. Vorsicht: Bilder in Ordnern, die nur `index.en.md`
 enthalten, sieht Hugo nicht (Dateien ohne Sprachkennung gehören zur
 Standardsprache Deutsch) – siehe offene Punkte in `docs/MIGRATION.md`.
+
+## Quiz
+
+- **`/quiz/`** (Vorlage `layouts/quiz/section.html`): stellt das Klanglabor vor
+  und listet die Quizze aus `content/quiz/<ordner>/` im Inhalts-Repository.
+- **`/quiz/klanglabor.html`**: die Klanglabor-App, nur auf Deutsch. Hugo erzeugt
+  sie als eigenes Ausgabeformat des Quiz-Bereichs (`hugo.toml`, Abschnitt
+  `outputFormats.klanglabor` und Cascade; Vorlage
+  `layouts/quiz/section.klanglabor.html`). Code und Inhalte der App liegen in
+  `assets/klanglabor/` und werden nur hier gepflegt. Anpassungen gegenüber der
+  Ausgangsfassung: `style` per CSSOM statt Attribut (CSP), Logo und Links per
+  `data-`Attribut, Rückweg zur Quiz-Übersicht, Impressum und Datenschutz im Footer.
+- **Eigene Quizze** pflegen Autoren in Pages CMS („Quiz (Deutsch)“, „Quiz
+  (Englisch)“). Eine Quiz-Seite darf zusätzlich zu den vier Feldern genau das
+  Feld `fragen` haben: 1–50 Fragen mit `frage`, 2–6 `antworten`, `richtig`
+  (Nummer der richtigen Antwort, 1 = erste) und optional `erklaerung`. Das prüft
+  `scripts/check-content.py`; der Ordnername `klanglabor` ist reserviert.
+  Die Quizze kommen ohne JavaScript aus: Auflösung und Punktestand per CSS.
+- **Sicherheit:** Die CSP erlaubt `script-src 'self'` (keine Inline-Skripte).
+  Welche Skripte es gibt, legt `scripts/allowlist.json` fest – nur das
+  Klanglabor-Bündel; Werte mit `^` sind Muster. JavaScript-Dateien sind nur
+  unter `/quiz/` erlaubt (`scripts/check-output.py`).

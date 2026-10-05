@@ -28,6 +28,15 @@ from datetime import datetime
 REQUIRED_FIELDS = {"title"}
 ALLOWED_FIELDS = {"title", "date", "draft", "description"}
 
+# Quiz-Seiten (content/quiz/<ordner>/index.*.md) dürfen zusätzlich "fragen" haben:
+# eine Liste von {frage, antworten, richtig, erklaerung}. Sonst gilt überall die
+# Vier-Felder-Regel.
+QUIZ_PAGE = re.compile(r"^content/quiz/[a-z0-9-]+/index\.(de|en)\.md$")
+QUIZ_RESERVED = {"klanglabor"}   # /quiz/klanglabor.html ist die App-Seite
+QUIZ_MAX_QUESTIONS = 50
+QUIZ_ANSWERS = (2, 6)
+QUIZ_KEYS = {"frage", "antworten", "richtig", "erklaerung"}
+
 MAX_IMAGE_BYTES = 2 * 1024 * 1024
 MAX_TEXT_BYTES = 200 * 1024
 MAX_CONFIG_BYTES = 64 * 1024
@@ -100,11 +109,47 @@ def valid_date(value):
     return True
 
 
+def check_questions(report, path, questions):
+    if type(questions) is not list or not 1 <= len(questions) <= QUIZ_MAX_QUESTIONS:
+        report.add(path, "'fragen' muss eine Liste mit 1 bis %d Fragen sein" % QUIZ_MAX_QUESTIONS)
+        return
+    for number, q in enumerate(questions, 1):
+        where = "Frage %d: " % number
+        if type(q) is not dict:
+            report.add(path, where + "muss ein Objekt sein")
+            continue
+        for key in sorted(set(q) - QUIZ_KEYS):
+            report.add(path, where + "Feld %r ist nicht erlaubt (erlaubt: %s)" % (key, ", ".join(sorted(QUIZ_KEYS))))
+        frage = q.get("frage")
+        if type(frage) is not str or not frage.strip() or len(frage) > 500:
+            report.add(path, where + "'frage' muss ein Text mit 1 bis 500 Zeichen sein")
+        answers = q.get("antworten")
+        low, high = QUIZ_ANSWERS
+        if (type(answers) is not list or not low <= len(answers) <= high
+                or any(type(a) is not str or not a.strip() or len(a) > 300 for a in answers)):
+            report.add(path, where + "'antworten' muss eine Liste mit %d bis %d nicht leeren Texten sein" % (low, high))
+            answers = None
+        right = q.get("richtig")
+        if type(right) is not int or (answers is not None and not 1 <= right <= len(answers)):
+            report.add(path, where + "'richtig' muss die Nummer einer Antwort sein (1 bis Anzahl der Antworten)")
+        explain = q.get("erklaerung")
+        if explain is not None and (type(explain) is not str or len(explain) > 1000):
+            report.add(path, where + "'erklaerung' muss ein Text mit höchstens 1000 Zeichen sein")
+
+
 def check_front_matter(report, path, fm):
-    unknown = sorted(set(fm) - ALLOWED_FIELDS)
+    allowed = ALLOWED_FIELDS
+    rel = os.path.relpath(path, report.root).replace(os.sep, "/")
+    if QUIZ_PAGE.match(rel):
+        allowed = ALLOWED_FIELDS | {"fragen"}
+        if "fragen" not in fm:
+            report.add(path, "Pflichtfeld 'fragen' fehlt (Quiz)")
+        else:
+            check_questions(report, path, fm["fragen"])
+    unknown = sorted(set(fm) - allowed)
     for key in unknown:
         report.add(path, "Feld %r ist nicht erlaubt (erlaubt: %s)"
-                   % (key, ", ".join(sorted(ALLOWED_FIELDS))))
+                   % (key, ", ".join(sorted(allowed))))
     for key in sorted(REQUIRED_FIELDS - set(fm)):
         report.add(path, "Pflichtfeld %r fehlt" % key)
 
@@ -300,6 +345,9 @@ def walk_content(report, directory, allowed_shortcodes, is_root):
         if kind == "dir":
             if not NAME_DIR.match(entry.name):
                 report.add(path, "Ordnername nur aus Kleinbuchstaben, Ziffern und Bindestrich")
+                continue
+            if entry.name in QUIZ_RESERVED and os.path.basename(directory) == "quiz":
+                report.add(path, "Ordnername %r ist reserviert" % entry.name)
                 continue
             walk_content(report, path, allowed_shortcodes, False)
             continue

@@ -10,5 +10,14 @@
     "www.musictheory.net",
     "www.teoria.com"
   ],
-  "elements": []
+  "elements": [
+    {
+      "tag": "script",
+      "attrs": {
+        "src": "^/quiz/klanglabor\\.min\\.[0-9a-f]{64}\\.js$",
+        "integrity": "^sha256-[A-Za-z0-9+/]{43}=$",
+        "defer": ""
+      }
+    }
+  ]
 }

@@ -55,6 +55,22 @@ buildFuture = true
   section = ['html', 'rss']
   page = ['html']
 
+# Klanglabor: eigenständige App-Seite /quiz/klanglabor.html, nur auf Deutsch.
+# Über die Site-Cascade gesetzt, weil das Feld "outputs" im Inhalt verboten ist.
+[outputFormats.klanglabor]
+  mediaType = 'text/html'
+  baseName = 'klanglabor'
+  isHTML = true
+  notAlternative = true
+
+[[cascade]]
+  outputs = ['html', 'rss', 'klanglabor']
+  [cascade.target]
+    path = '/quiz'
+    kind = 'section'
+    [cascade.target.sites.matrix]
+      languages = ['de']
+
 [markup]
   [markup.goldmark]
     [markup.goldmark.parser]

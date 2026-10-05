@@ -43,3 +43,25 @@ legal = "Legal"
 rss = "RSS feed"
 copyright = "Copyright © {{ .Year }} MusePrep. All rights reserved."
 external = "opens YouTube in a new tab"
+
+nav_quiz = "Quiz"
+lab_eyebrow = "Interactive course · 7 chapters"
+lab_title = "Klanglabor: The diminished seventh chord"
+lab_text = "Four notes, three minor thirds, one perfect square. Build the chord yourself, listen to it, resolve it and reinterpret it – with a keyboard, listening exercises and a speed round."
+lab_only_de = "The Klanglabor is currently only available in German."
+lab_note = "Runs in your browser with sound; your progress stays on this device."
+lab_cta = "Open the Klanglabor"
+more_quizzes = "More quizzes"
+no_quizzes = "More quizzes will appear here soon."
+quiz_hint = "Pick an answer – the solution appears right away."
+quiz_right = "Correct."
+quiz_wrong = "Not quite. The correct answer is:"
+quiz_back = "All quizzes"
+
+[questions]
+one = "{{ .Count }} question"
+other = "{{ .Count }} questions"
+
+[quiz_score]
+one = "of {{ .Count }} question correct"
+other = "of {{ .Count }} questions correct"

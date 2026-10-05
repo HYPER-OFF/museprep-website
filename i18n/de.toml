@@ -43,3 +43,25 @@ legal = "Rechtliches"
 rss = "RSS-Feed"
 copyright = "© {{ .Year }} MusePrep. Alle Rechte vorbehalten."
 external = "öffnet YouTube in neuem Tab"
+
+nav_quiz = "Quiz"
+lab_eyebrow = "Interaktiver Kurs · 7 Kapitel"
+lab_title = "Klanglabor: Der verminderte Septakkord"
+lab_text = "Vier Töne, drei kleine Terzen, ein perfektes Quadrat. Bau den Akkord selbst, hör ihn, lös ihn auf und deute ihn um – mit Klaviatur, Hörproben und Blitzrunde."
+lab_only_de = ""
+lab_note = "Läuft im Browser mit Ton; dein Fortschritt bleibt nur auf diesem Gerät."
+lab_cta = "Klanglabor öffnen"
+more_quizzes = "Weitere Quizze"
+no_quizzes = "Hier erscheinen bald weitere Quizze."
+quiz_hint = "Wähle eine Antwort – die Auflösung erscheint sofort."
+quiz_right = "Richtig."
+quiz_wrong = "Leider falsch. Richtig ist:"
+quiz_back = "Alle Quizze"
+
+[questions]
+one = "{{ .Count }} Frage"
+other = "{{ .Count }} Fragen"
+
+[quiz_score]
+one = "von {{ .Count }} Frage richtig"
+other = "von {{ .Count }} Fragen richtig"

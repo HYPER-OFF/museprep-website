@@ -12,7 +12,8 @@ Ergebnis: Exit 0 = bestanden, 1 = Verstöße, 2 = Aufruf- oder Konfigurationsfeh
 
 Regeln:
 - script, iframe, object, embed, form nur in einer Form aus allowlist.json
-  ("elements": Tag mit exakt diesen Attributen, ohne Inline-Inhalt).
+  ("elements": Tag mit exakt diesen Attributen, ohne Inline-Inhalt; ein Wert,
+  der mit ^ beginnt, ist ein regulärer Ausdruck für den ganzen Wert).
 - Keine Attribute, die mit "on" beginnen; keine javascript:/vbscript:-Adressen;
   keine data:-Adressen; keine style-Attribute, kein <style>, kein <base>,
   kein <meta http-equiv="refresh">.
@@ -50,6 +51,7 @@ LINK_SCHEMES = {"mailto", "tel"}
 
 ALLOWED_EXTENSIONS = {".html", ".xml", ".css", ".woff2", ".webp", ".txt"}
 PNG_DIR = "images/"          # nur Icons aus assets/images
+JS_DIR = "quiz/"             # nur das Klanglabor
 ROOT_DOTFILES = {".htaccess"}
 
 CSS_URL = re.compile(r"url\(\s*(['\"]?)(.*?)\1\s*\)", re.IGNORECASE | re.DOTALL)
@@ -177,10 +179,19 @@ class PageParser(HTMLParser):
             self.inline[self._open[1]] = self.inline.get(self._open[1], "") + data
 
 
+def attr_matches(expected, actual):
+    """Wert aus allowlist.json: exakt, oder als Muster, wenn er mit ^ beginnt."""
+    if expected.startswith("^"):
+        return re.fullmatch(expected, actual) is not None
+    return expected == actual
+
+
 def element_allowed(site, tag, attrs):
     form = {k: (v if v is not None else "") for k, v in attrs}
     for allowed in site.elements:
-        if allowed.get("tag") == tag and allowed.get("attrs", {}) == form:
+        expected = allowed.get("attrs", {})
+        if (allowed.get("tag") == tag and set(expected) == set(form)
+                and all(attr_matches(expected[k], form[k]) for k in form)):
             return True
     return False
 
@@ -262,6 +273,9 @@ def check_site(site, require_htaccess=False):
         elif ext == ".png":
             if not rel.startswith(PNG_DIR):
                 report.add(rel, "PNG nur unter /%s (Inhaltsbilder werden als WebP ausgeliefert)" % PNG_DIR)
+        elif ext == ".js":
+            if not rel.startswith(JS_DIR):
+                report.add(rel, "JavaScript nur unter /%s" % JS_DIR)
         elif ext not in ALLOWED_EXTENSIONS:
             report.add(rel, "Dateityp %r ist auf dem Webspace nicht erlaubt" % (ext or name))
 

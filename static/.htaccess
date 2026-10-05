@@ -21,8 +21,9 @@ ErrorDocument 404 /404.html
 </FilesMatch>
 
 <IfModule mod_headers.c>
-  # Keine fremden Quellen, kein JavaScript, keine Inline-Styles.
-  Header always set Content-Security-Policy "default-src 'none'; img-src 'self'; style-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+  # Keine fremden Quellen, keine Inline-Skripte, keine Inline-Styles. Eigene
+  # Skripte gibt es nur im Klanglabor (welche, prüft scripts/check-output.py).
+  Header always set Content-Security-Policy "default-src 'none'; img-src 'self'; style-src 'self'; font-src 'self'; script-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
   # HSTS: nach erfolgreichem Go-Live auf max-age=31536000 erhöhen.
   Header always set Strict-Transport-Security "max-age=300"
   Header always set X-Content-Type-Options "nosniff"
@@ -36,7 +37,7 @@ ErrorDocument 404 /404.html
     Header set Cache-Control "no-cache"
   </FilesMatch>
   # Dateien mit Prüfsumme im Namen ändern sich nie.
-  <FilesMatch "(\.min\.[0-9a-f]{64}\.css|_hu_[0-9a-f]+\.(webp|png))$">
+  <FilesMatch "(\.min\.[0-9a-f]{64}\.(css|js)|_hu_[0-9a-f]+\.(webp|png))$">
     Header set Cache-Control "public, max-age=31536000, immutable"
   </FilesMatch>
   <FilesMatch "\.woff2$">

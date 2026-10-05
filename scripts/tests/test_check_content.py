@@ -335,6 +335,75 @@ class CheckContentTest(unittest.TestCase):
         self.assertFails("Ordner content/ fehlt")
 
 
+QUIZ = {"title": "Intervalle", "description": "Kurz",
+        "fragen": [{"frage": "Wie viele Halbtöne hat eine große Terz?", "antworten": ["3", "4"], "richtig": 2,
+                    "erklaerung": "C – E"}]}
+
+
+class QuizSchemaTest(CheckContentTest):
+    """Quiz-Seiten dürfen zusätzlich "fragen" haben – mit festem Aufbau."""
+
+    def setUp(self):
+        super().setUp()
+        self.write("content/quiz/_index.de.md", page({"title": "Quiz"}))
+        self.write("content/quiz/intervalle/index.de.md", page(QUIZ))
+
+    def set_quiz(self, **changes):
+        quiz = json.loads(json.dumps(QUIZ))
+        quiz.update(changes)
+        self.write("content/quiz/intervalle/index.de.md", page(quiz))
+
+    def set_question(self, **changes):
+        q = dict(QUIZ["fragen"][0], **changes)
+        self.set_quiz(fragen=[{k: v for k, v in q.items() if v is not None}])
+
+    def test_valid_quiz_passes(self):
+        self.assertPasses()
+
+    def test_optional_explanation(self):
+        self.set_question(erklaerung=None)
+        self.assertPasses()
+
+    def test_quiz_needs_questions(self):
+        quiz = dict(QUIZ)
+        del quiz["fragen"]
+        self.write("content/quiz/intervalle/index.de.md", page(quiz))
+        self.assertFails("Pflichtfeld 'fragen' fehlt")
+
+    def test_questions_only_on_quiz_pages(self):
+        self.write("content/artikel/notenlesen/index.de.md", page(dict(ARTICLE, fragen=QUIZ["fragen"])))
+        self.assertFails("Feld 'fragen' ist nicht erlaubt")
+
+    def test_invalid_questions(self):
+        for change, expected in [({"fragen": []}, "Liste mit 1 bis"),
+                                 ({"fragen": "Frage?"}, "Liste mit 1 bis"),
+                                 ({"fragen": ["Frage?"]}, "muss ein Objekt sein")]:
+            with self.subTest(change=change):
+                self.reset()
+                self.write("content/quiz/intervalle/index.de.md", page(dict(QUIZ, **change)))
+                self.assertFails(expected)
+
+    def test_invalid_question_fields(self):
+        for change, expected in [({"richtig": 3}, "'richtig' muss"),
+                                 ({"richtig": 0}, "'richtig' muss"),
+                                 ({"richtig": True}, "'richtig' muss"),
+                                 ({"richtig": "2"}, "'richtig' muss"),
+                                 ({"antworten": ["nur eine"]}, "'antworten' muss"),
+                                 ({"antworten": ["a", "b", "c", "d", "e", "f", "g"]}, "'antworten' muss"),
+                                 ({"antworten": ["a", ""]}, "'antworten' muss"),
+                                 ({"frage": " "}, "'frage' muss"),
+                                 ({"erklaerung": 5}, "'erklaerung' muss"),
+                                 ({"bild": "x.jpg"}, "Feld 'bild' ist nicht erlaubt")]:
+            with self.subTest(change=change):
+                self.reset()
+                self.set_question(**change)
+                self.assertFails(expected)
+
+    def test_reserved_folder(self):
+        self.write("content/quiz/klanglabor/index.de.md", page(QUIZ))
+        self.assertFails("ist reserviert")
+
+
 class RealContentTest(unittest.TestCase):
     """Das echte Inhalts-Repository neben diesem Repository muss bestehen."""
 

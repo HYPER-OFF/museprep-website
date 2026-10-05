@@ -1,0 +1,32 @@
+{{ define "main" }}
+{{- $qs := .Params.fragen | default slice -}}
+<div class="article-head">
+  <div class="crumbs"><a href="{{ .Parent.RelPermalink }}">{{ upper .Parent.Title }}</a><span aria-hidden="true">/</span><span>{{ upper (T "questions" (len $qs)) }}</span></div>
+  <h1>{{ .Title }}</h1>
+  <div class="meta">{{ T "quiz_hint" }}</div>
+</div>
+<div class="with-aside article-layout">
+  <div class="prose quiz">
+    {{- with .Description }}<p class="lead">{{ . }}</p>{{ end }}
+    {{ .Content }}
+    {{- range $i, $q := $qs }}
+    {{- $right := int $q.richtig }}
+    <fieldset class="q">
+      <legend><span class="q-num">{{ add $i 1 }}</span>{{ $q.frage }}</legend>
+      <ul class="q-opts">
+        {{- range $j, $a := $q.antworten }}
+        <li><label class="q-opt"><input type="radio" name="frage-{{ add $i 1 }}"{{ if eq (add $j 1) $right }} class="ok"{{ end }}><span>{{ $a }}</span></label></li>
+        {{- end }}
+      </ul>
+      <p class="q-feedback q-feedback--ok">{{ T "quiz_right" }}{{ with $q.erklaerung }} {{ . }}{{ end }}</p>
+      <p class="q-feedback q-feedback--bad">{{ T "quiz_wrong" }} <strong>{{ index $q.antworten (sub $right 1) }}</strong>.{{ with $q.erklaerung }} {{ . }}{{ end }}</p>
+    </fieldset>
+    {{- end }}
+    {{- with $qs }}
+    <p class="q-score"><span class="q-score-n" aria-hidden="true"></span> {{ T "quiz_score" (len .) }}</p>
+    {{- end }}
+    <p><a class="more" href="{{ .Parent.RelPermalink }}">← {{ T "quiz_back" }}</a></p>
+  </div>
+  {{ partial "aside.html" . }}
+</div>
+{{ end }}

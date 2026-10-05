@@ -726,3 +726,80 @@ a {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; }
 }
+
+/* Quiz-Übersicht */
+.quiz-hub { padding: 56px var(--gutter) 100px; display: flex; flex-direction: column; gap: 56px; }
+.lab-card {
+  position: relative;
+  overflow: hidden;
+  background: repeating-linear-gradient(135deg, #15155A 0 10px, var(--ink) 10px 20px);
+  color: var(--paper);
+  padding: clamp(32px, 5vw, 56px);
+  margin-right: 16px;
+  box-shadow: 16px 16px 0 var(--gold);
+  h2 { position: relative; margin: 0; font: 400 clamp(32px, 4vw, 48px)/1.1 var(--serif); color: var(--paper); }
+  p { position: relative; margin: 0; max-width: 640px; font-size: 18px; line-height: 1.55; color: var(--on-ink); }
+  .btn { position: relative; align-self: flex-start; }
+}
+.lab-text { display: flex; flex-direction: column; gap: 18px; }
+.lab-eyebrow { position: relative; font: 500 12px var(--mono); letter-spacing: .14em; color: var(--gold); }
+.lab-note { font-size: 15px !important; color: var(--on-ink-dim) !important; }
+.lab-glyph {
+  position: absolute;
+  right: 4%;
+  bottom: -40px;
+  font: 400 clamp(160px, 20vw, 260px)/1 var(--serif);
+  color: var(--ink-glyph);
+}
+.quiz-intro { flex: none; max-width: 720px; }
+.card-meta { margin-top: auto !important; font: 500 12px var(--mono) !important; letter-spacing: .1em; color: var(--gold-dark) !important; text-transform: uppercase; }
+
+/* Quiz (ohne JavaScript: Auflösung und Punktestand per CSS) */
+.quiz { counter-reset: richtig; }
+.q {
+  margin: 12px 0 0;
+  padding: 24px 0 0;
+  border: 0;
+  border-top: 1px solid var(--ink);
+  min-width: 0;
+  legend {
+    float: left;
+    width: 100%;
+    margin-bottom: 18px;
+    padding: 0;
+    font: 400 26px/1.25 var(--serif);
+    color: var(--ink);
+  }
+}
+.q-num { display: inline-block; min-width: 1.6em; color: var(--gold-dark); }
+.prose .q-opts { clear: both; list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.q-opts li + li { margin-top: 0; }
+.q-opt {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  background: #fff;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+  input { accent-color: var(--ink); width: 18px; height: 18px; margin: 0; flex: none; }
+  &:hover { border-color: var(--ink); }
+}
+.q input.ok:checked { counter-increment: richtig; }
+.q:has(input:checked) .q-opt:has(input.ok) { border-color: #2E7550; background: #E3EFE5; }
+.q-opt:has(input:not(.ok):checked) { border-color: #B0372B; background: #F6E2DD; }
+.q-feedback { display: none; margin: 14px 0 0; padding: 14px 18px; font-size: 16px; line-height: 1.55; }
+.q-feedback--ok { background: #E3EFE5; color: #1F5238; }
+.q-feedback--bad { background: #F6E2DD; color: #7E2219; }
+.q:has(input.ok:checked) .q-feedback--ok,
+.q:has(input:not(.ok):checked) .q-feedback--bad { display: block; }
+.q-score {
+  display: none;
+  padding: 20px 24px;
+  background: var(--cream);
+  font: 400 24px/1.35 var(--serif);
+  color: var(--ink);
+}
+.quiz:has(input:checked) .q-score { display: block; }
+.q-score-n::before { content: counter(richtig); font-weight: 500; }
