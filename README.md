@@ -38,7 +38,7 @@ museprep_com/
 
 ```sh
 scripts/install-hugo.sh        # Hugo laut scripts/tools.lock nach .bin/, SHA-256-geprüft
-.bin/hugo server               # Vorschau unter http://localhost:1313/
+.bin/hugo server --renderToMemory   # Vorschau unter http://localhost:1313/ (schreibt nicht nach public/)
 scripts/build-local.sh         # Build wie im Workflow nach public/
 ```
 
