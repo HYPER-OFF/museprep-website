@@ -15,6 +15,7 @@ rm -rf "$root/public"
 "$root/.bin/hugo" --source "$root" --contentDir "$content/content" \
   --minify --panicOnWarning --printPathWarnings
 
-# Ausgangsprüfung (Paket 4): scripts/check-output.py "$root/public"
+# --require-htaccess kommt dazu, sobald static/.htaccess existiert (Paket 5).
+python3 "$root/scripts/check-output.py" "$root/public"
 
 echo "Fertig: $root/public"

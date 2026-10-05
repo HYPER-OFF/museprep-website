@@ -64,7 +64,8 @@ Workflow übergibt den Pfad mit `--contentDir`.
 - Paket 2: Hugo-Grundgerüst mit Design, zwei Sprachen, lokalen Schriften und
   Bild-Hook.
 - Paket 3: Eingangsprüfung `scripts/check-content.py` mit Testfällen.
-- Ausgangsprüfung und Workflow folgen in den nächsten Paketen.
+- Paket 4: Ausgangsprüfung `scripts/check-output.py` mit Testfällen.
+- Workflow, `.htaccess` und Upload folgen in Paket 5.
 
 ## Eingangsprüfung
 
@@ -80,3 +81,19 @@ höchstens 2 MB und 40 Mio. Pixel mit passender Signatur, Texte höchstens
 200 KB, Kopfbereich als JSON mit nur `title`, `date`, `draft`, `description`,
 keine Shortcodes außer denen in `scripts/allowlist.json` und kein `}` im Text
 (sonst kann Pages CMS die Datei nicht öffnen).
+
+## Ausgangsprüfung
+
+```sh
+python3 scripts/check-output.py public/      # Exit 0 = bestanden, 1 = Verstöße
+```
+
+Geprüft wird das fertige HTML und CSS in `public/`: `script`, `iframe`,
+`object`, `embed` und `form` nur in der Form, die `allowlist.json` unter
+`elements` nennt (die Liste ist leer, die Seite hat kein JavaScript); keine
+`on…`-Attribute, keine `javascript:`- oder `data:`-Adressen, keine
+Inline-Styles; Bilder, CSS und Schriften nur von der eigenen Domain; Links
+nach außen nur zu Domains aus `external_domains`; interne Links und Quellen
+müssen existieren; nur erlaubte Dateitypen (keine Originalbilder, kein PHP).
+Mit `--manifest-out` und `--links-out` schreibt das Skript Prüfsummen aller
+Dateien und die Liste externer Links für den Bericht im Workflow.
