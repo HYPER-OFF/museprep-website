@@ -1,0 +1,271 @@
+# Build und Upload von museprep.com
+#
+# 1. check:  Inhaltsstand ermitteln; ist er (mit diesem Website-Stand) schon
+#            gebaut, endet der Lauf hier.
+# 2. build:  Eingangsprüfung → Hugo (SHA-256-geprüft) → Ausgangsprüfung →
+#            Bericht → Artefakt.
+# 3. deploy: wartet auf die Freigabe in der Umgebung "production", dann
+#            rsync über SSH. Ein neuer Lauf ersetzt einen wartenden älteren.
+#
+# Das Repository ist öffentlich: Logs, Bericht und Artefakte enthalten nur,
+# was nach der Freigabe ohnehin öffentlich ist. Keine Inhalts-Diffs ausgeben.
+# Pull Requests starten nichts; pull_request_target kommt hier nicht vor.
+
+name: Build und Upload
+
+on:
+  schedule:
+    # alle 15 Minuten, versetzt zur vollen Stunde
+    - cron: '4,19,34,49 * * * *'
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Auch bauen, wenn dieser Inhaltsstand schon gebaut wurde'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  CONTENT_REPO: HYPER-OFF/museprep-content
+  BASE_URL: https://museprep.com/
+
+jobs:
+  check:
+    name: Inhaltsstand prüfen
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      changed: ${{ steps.decide.outputs.changed }}
+      content_sha: ${{ steps.sha.outputs.sha }}
+    steps:
+      # Ohne Lese-Schlüssel endet der Lauf mit einem Hinweis statt mit einem
+      # Fehler – sonst käme bis zur Einrichtung alle 15 Minuten eine Fehler-Mail.
+      - name: Einrichtung prüfen
+        id: setup
+        env:
+          KEY: ${{ secrets.CONTENT_DEPLOY_KEY }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "::warning::Secret CONTENT_DEPLOY_KEY fehlt (siehe docs/SETUP.md) – kein Build."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Inhalts-Repository (nur aktueller Stand) holen
+        if: steps.setup.outputs.ready == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ env.CONTENT_REPO }}
+          ssh-key: ${{ secrets.CONTENT_DEPLOY_KEY }}
+          persist-credentials: false
+          fetch-depth: 1
+          sparse-checkout: .pages.yml
+          sparse-checkout-cone-mode: false
+          path: content
+
+      - name: Commit-Hash des Inhalts
+        id: sha
+        if: steps.setup.outputs.ready == 'true'
+        run: |
+          sha="$(git -C content rev-parse HEAD)"
+          [[ "$sha" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::Unerwarteter Commit-Hash"; exit 1; }
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      - name: Schon gebaut?
+        id: marker
+        if: steps.setup.outputs.ready == 'true'
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .built
+          key: built-${{ github.sha }}-${{ steps.sha.outputs.sha }}
+
+      - name: Entscheiden
+        id: decide
+        env:
+          READY: ${{ steps.setup.outputs.ready }}
+          HIT: ${{ steps.marker.outputs.cache-hit }}
+          FORCE: ${{ github.event_name == 'workflow_dispatch' && inputs.force }}
+        run: |
+          if [ "$READY" != "true" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          elif [ "$HIT" = "true" ] && [ "$FORCE" != "true" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Dieser Inhaltsstand ist mit diesem Website-Stand schon gebaut – nichts zu tun." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            mkdir -p .built
+            echo "$GITHUB_RUN_ID" > .built/run
+          fi
+
+      - name: Als gebaut markieren
+        if: steps.decide.outputs.changed == 'true' && steps.marker.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .built
+          key: built-${{ github.sha }}-${{ steps.sha.outputs.sha }}
+
+  build:
+    name: Prüfen und bauen
+    needs: check
+    if: needs.check.outputs.changed == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    concurrency:
+      group: museprep-build
+      cancel-in-progress: true
+    steps:
+      - name: Website-Repository holen
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: site
+          persist-credentials: false
+
+      - name: Inhalts-Repository holen
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ env.CONTENT_REPO }}
+          ref: ${{ needs.check.outputs.content_sha }}
+          ssh-key: ${{ secrets.CONTENT_DEPLOY_KEY }}
+          persist-credentials: false
+          fetch-depth: 0
+          path: content
+
+      - name: Zuletzt hochgeladenen Stand laden
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: previous
+          key: report-${{ github.run_id }}
+          restore-keys: report-
+
+      - name: Historie des Inhalts-Repositorys prüfen
+        run: |
+          if [ -f previous/content-sha ]; then
+            old="$(cat previous/content-sha)"
+            [[ "$old" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::Gespeicherter Commit-Hash ungültig"; exit 1; }
+            if ! git -C content merge-base --is-ancestor "$old" HEAD 2>/dev/null; then
+              echo "::error::Die Historie des Inhalts-Repositorys wurde umgeschrieben: der zuletzt hochgeladene Stand ${old:0:12} ist kein Vorgänger des aktuellen."
+              exit 1
+            fi
+          else
+            echo "Noch kein hochgeladener Stand bekannt."
+          fi
+
+      - name: Eingangsprüfung
+        run: python3 site/scripts/check-content.py content
+
+      - name: Hugo installieren (offizielles Release, SHA-256-geprüft)
+        run: site/scripts/install-hugo.sh
+
+      - name: Hugo-Build
+        run: |
+          site/.bin/hugo --source site --contentDir "$GITHUB_WORKSPACE/content/content" \
+            --minify --panicOnWarning --printPathWarnings
+
+      - name: Ausgangsprüfung
+        run: |
+          mkdir -p report
+          python3 site/scripts/check-output.py site/public --base-url "$BASE_URL" --require-htaccess \
+            --manifest-out report/manifest.json --links-out report/links.txt
+
+      - name: Bericht
+        run: python3 site/scripts/build-report.py --current report --previous previous >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Artefakt public
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: public
+          path: site/public
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Artefakt Bericht
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: report
+          path: report
+          if-no-files-found: error
+          retention-days: 7
+
+  deploy:
+    name: Upload nach Freigabe
+    needs: [check, build]
+    # Erst aktiv, wenn der Hoster eingerichtet ist (Repository-Variable).
+    if: needs.check.outputs.changed == 'true' && vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: https://museprep.com/
+    concurrency:
+      group: museprep-deploy
+      cancel-in-progress: true
+    steps:
+      - name: Prüfskripte und Host-Schlüssel holen
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: site
+          persist-credentials: false
+          sparse-checkout: |
+            scripts
+            deploy
+
+      - name: Artefakt public laden
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: public
+          path: public
+
+      - name: Artefakt Bericht laden
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: report
+          path: report
+
+      - name: Ausgangsprüfung am heruntergeladenen Artefakt
+        run: python3 site/scripts/check-output.py public --base-url "$BASE_URL" --require-htaccess
+
+      - name: Upload per rsync
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          TARGET: ${{ vars.DEPLOY_TARGET }}
+        run: |
+          set -euo pipefail
+          if [ -z "$TARGET" ] || [ -z "$SSH_KEY" ]; then
+            echo "::error::DEPLOY_TARGET (Variable) oder DEPLOY_SSH_KEY (Secret) fehlt in der Umgebung production."
+            exit 1
+          fi
+          if ! grep -qE '^[^#[:space:]]' site/deploy/known_hosts; then
+            echo "::error::deploy/known_hosts enthält noch keinen Host-Schlüssel des Webservers."
+            exit 1
+          fi
+          umask 077
+          printf '%s\n' "$SSH_KEY" > "$RUNNER_TEMP/deploy_key"
+          trap 'rm -f "$RUNNER_TEMP/deploy_key"' EXIT
+          rsync -rpc --chmod=D755,F644 --delete-delay --delay-updates --max-delete=300 \
+            --exclude='/.well-known/' \
+            -e "ssh -i $RUNNER_TEMP/deploy_key -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$GITHUB_WORKSPACE/site/deploy/known_hosts" \
+            public/ "$TARGET"
+
+      - name: Live-Seite kontrollieren
+        env:
+          LIVE_URL: ${{ vars.LIVE_URL || 'https://museprep.com/' }}
+        run: |
+          curl -fsS --max-time 30 -D headers.txt -o /dev/null "$LIVE_URL"
+          grep -qi '^content-security-policy:' headers.txt || { echo "::error::Live-Seite liefert keine Content-Security-Policy."; exit 1; }
+
+      - name: Stand als hochgeladen merken
+        env:
+          CONTENT_SHA: ${{ needs.check.outputs.content_sha }}
+        run: echo "$CONTENT_SHA" > report/content-sha
+
+      - name: Bericht für den nächsten Vergleich speichern
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: report
+          key: report-${{ github.run_id }}

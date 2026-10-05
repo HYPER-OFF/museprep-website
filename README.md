@@ -56,7 +56,10 @@ Workflow übergibt den Pfad mit `--contentDir`.
 | `assets/images/` | Logo und Icon, werden beim Build neu kodiert |
 | `i18n/` | Oberflächentexte Deutsch/Englisch |
 | `static/fonts/` | Schriften als WOFF2 mit Lizenzen |
-| `scripts/` | Hugo-Installation, lokaler Build, später Prüfskripte |
+| `scripts/` | Hugo-Installation, lokaler Build, Prüfskripte, Bericht |
+| `.github/workflows/build.yml` | Build mit Freigabe und Upload |
+| `deploy/known_hosts` | fest hinterlegter Host-Schlüssel des Webservers |
+| `static/.htaccess` | Sicherheits-Kopfzeilen, später Weiterleitungen |
 
 ## Stand
 
@@ -65,7 +68,10 @@ Workflow übergibt den Pfad mit `--contentDir`.
   Bild-Hook.
 - Paket 3: Eingangsprüfung `scripts/check-content.py` mit Testfällen.
 - Paket 4: Ausgangsprüfung `scripts/check-output.py` mit Testfällen.
-- Workflow, `.htaccess` und Upload folgen in Paket 5.
+- Paket 5: Workflow `.github/workflows/build.yml` mit Zeitsteuerung, Freigabe
+  und rsync-Upload, `static/.htaccess` mit Sicherheits-Kopfzeilen,
+  Dependabot. Einrichtung und Ablauf: [`docs/SETUP.md`](docs/SETUP.md),
+  Abschnitte 5–7.
 
 ## Eingangsprüfung
 

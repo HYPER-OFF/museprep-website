@@ -1,0 +1,4 @@
+# PLATZHALTER – Host-Schlüssel des Webservers eintragen, sobald der Hoster feststeht.
+# Ermitteln:  ssh-keyscan -t ed25519 <host>
+# Abgleichen: Fingerprint (ssh-keygen -lf) mit der Angabe des Hosters vergleichen.
+# Danach diese Kommentarzeilen stehen lassen und die Schlüsselzeile darunter einfügen.

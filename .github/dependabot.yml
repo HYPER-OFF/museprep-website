@@ -1,0 +1,11 @@
+# Hält die per Commit-Hash fixierten GitHub-Actions aktuell. Gemergte
+# Updates zählen zugleich als Aktivität, damit GitHub die Zeitsteuerung
+# nicht nach 60 Tagen abschaltet.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "Actions"

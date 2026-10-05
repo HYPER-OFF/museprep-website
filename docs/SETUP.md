@@ -31,8 +31,7 @@ gibt es bei privaten Repositories nur im Enterprise-Tarif.
 - [ ] Pages CMS: auf <https://app.pagescms.org> mit HYPER-OFF anmelden und die
       GitHub-App installieren. Dabei **Only select repositories** wählen und
       nur `museprep-content` freigeben, nicht „All repositories“.
-- [ ] Später (Paket 5): Settings → Deploy keys → Lese-Schlüssel des Builds
-      hinzufügen, **ohne** „Allow write access“.
+- [ ] Deploy Key für den Build eintragen, siehe Abschnitt 5.
 
 ## 3. Website-Repository `museprep-website`
 
@@ -59,10 +58,7 @@ gibt es bei privaten Repositories nur im Enterprise-Tarif.
   - Deployment branches and tags: **Selected branches and tags** → nur `main`
 - [ ] Settings → Code security: Secret scanning und Push protection sind an
       (bei öffentlichen Repositories Standard).
-- [ ] Später (Paket 5): Repository-Secret `CONTENT_DEPLOY_KEY` (private Hälfte
-      des Lese-Schlüssels). In der Umgebung `production`: Secret
-      `DEPLOY_SSH_KEY` (Upload-Schlüssel) und Variable `DEPLOY_TARGET`
-      (`benutzer@host:pfad/`).
+- [ ] Secrets und Variablen für den Workflow, siehe Abschnitt 5.
 
 ## 4. Abnahme Paket 1
 
@@ -75,6 +71,90 @@ abgewiesen:
    erscheint ein neuer Commit von ihm.
 4. Im Website-Repository hat der Autor kein Schreibrecht: Auf github.com fehlt
    „Edit“ bzw. GitHub bietet nur einen Fork an, und `git push` wird abgewiesen.
+
+## 5. Workflow: Schlüssel, Secrets, Variablen
+
+Die Schlüsselpaare liegen lokal in `~/museprep-keys/` (außerhalb der Repos):
+
+| Datei | Zweck | Fingerprint |
+|---|---|---|
+| `content-deploy` / `.pub` | Build liest `museprep-content` | `SHA256:lJdd1HCWmTAZE1C3nIZInEzaMHW/Fvb9hu0GXCHUJ0A` |
+| `upload` / `.pub` | Upload ins Webverzeichnis | `SHA256:m/AaCRGE02nHtlyaWEQiMvHg3KAMCmjz3DfjyCWdCLU` |
+
+Zum Kopieren ohne Anzeige: `pbcopy < ~/museprep-keys/content-deploy.pub`
+(öffentlich) bzw. `pbcopy < ~/museprep-keys/content-deploy` (privat).
+
+**Lese-Schlüssel (jetzt):**
+
+- [ ] `museprep-content` → Settings → Deploy keys → **Add deploy key**:
+      Titel `museprep-website build`, Inhalt von `content-deploy.pub`,
+      **„Allow write access“ nicht anhaken**.
+- [ ] `museprep-website` → Settings → Secrets and variables → Actions →
+      **New repository secret**: Name `CONTENT_DEPLOY_KEY`, Inhalt der
+      privaten Datei `content-deploy` (komplett, mit BEGIN/END-Zeilen).
+
+Ohne diesen Secret endet jeder Lauf mit dem Hinweis „CONTENT_DEPLOY_KEY
+fehlt“, aber ohne Fehler-Mail.
+
+**Upload (sobald der Hoster feststeht):**
+
+- [ ] Beim Hoster: eigener SSH-Benutzer, der nur ins Webverzeichnis schreiben
+      darf; `upload.pub` in dessen `~/.ssh/authorized_keys`, wenn möglich mit
+      `restrict,command="rrsync -wo <webverzeichnis>" ssh-ed25519 …`.
+- [ ] Host-Schlüssel des Servers mit `ssh-keyscan -t ed25519 <host>` holen, den
+      Fingerprint mit der Angabe des Hosters vergleichen und die Zeile in
+      `deploy/known_hosts` eintragen (Commit im Website-Repository).
+- [ ] Umgebung `production` → **Environment secrets**: `DEPLOY_SSH_KEY` =
+      Inhalt der privaten Datei `upload`.
+- [ ] Umgebung `production` → **Environment variables**: `DEPLOY_TARGET` =
+      `benutzer@host:pfad/zum/webverzeichnis/` (mit Schrägstrich am Ende).
+- [ ] Optional, solange die Domain noch auf WordPress zeigt:
+      Repository-Variable `LIVE_URL` = Adresse, unter der die neue Seite
+      erreichbar ist (für die Kontrolle nach dem Upload).
+- [ ] Zuletzt Repository-Variable `DEPLOY_ENABLED` = `true`. Vorher läuft der
+      Upload-Job gar nicht, es kommen also keine Freigabe-Mails.
+
+Sind die Schlüssel in GitHub und beim Hoster hinterlegt, die privaten Dateien
+in einem Passwortmanager sichern und aus `~/museprep-keys/` löschen.
+
+## 6. Wie der Workflow arbeitet
+
+- **Start:** alle 15 Minuten, bei jedem Push auf `main` im Website-Repository
+  und per Hand (Actions → Build und Upload → Run workflow). Pull Requests
+  starten nichts.
+- **Nur einmal bauen:** Ist der Inhaltsstand mit dem aktuellen Website-Stand
+  schon gebaut, endet der Lauf nach wenigen Sekunden. Das gilt auch, wenn der
+  Build gescheitert oder die Freigabe abgelehnt wurde. Neu bauen: „Run
+  workflow“ mit Häkchen **force**.
+- **Freigabe:** Der Upload-Job wartet in der Umgebung `production`; GitHub
+  schickt eine Mail. Unter Actions → Lauf → **Review deployments** freigeben
+  oder ablehnen. Kommt vorher ein neuer Stand, ersetzt dessen Lauf den
+  wartenden.
+- **Bericht:** In der Zusammenfassung jedes Laufs stehen geänderte Dateien
+  und neue externe Links gegenüber dem zuletzt hochgeladenen Stand.
+- **Öffentlich:** Das Website-Repository ist öffentlich, damit auch Logs,
+  Berichte und das Artefakt `public` (7 Tage). Sie enthalten nur, was nach der
+  Freigabe ohnehin auf der Website steht – ein abgelehnter Stand bleibt aber
+  bis zu 7 Tage als Artefakt herunterladbar.
+- **Historie:** Wurde die Historie des Inhalts-Repositorys umgeschrieben
+  (Force-Push), bricht der Build ab.
+- **Zeitsteuerung:** GitHub schaltet zeitgesteuerte Läufe in öffentlichen
+  Repositories nach 60 Tagen ohne Aktivität ab und schickt dann eine Mail.
+  Dependabot (`.github/dependabot.yml`) schlägt monatlich Updates der Actions
+  vor; gemergte Updates zählen als Aktivität. Kommt die Mail trotzdem: Actions
+  → Build und Upload → **Enable workflow**.
+- **Fehler:** Schlägt ein Schritt fehl, endet der Lauf und die Live-Seite
+  bleibt unverändert.
+
+## 7. Abnahme Paket 5
+
+1. Eine Änderung in Pages CMS speichern. Innerhalb von 15 Minuten startet ein
+   Lauf, baut und wartet auf Freigabe.
+2. **Ablehnen** → die Live-Seite bleibt unverändert.
+3. Neue Änderung speichern, **freigeben** → die Änderung ist live, die
+   Kontrolle meldet die Content-Security-Policy.
+4. Zwei Läufe kurz hintereinander per „Run workflow“ mit force → der ältere,
+   noch wartende wird abgebrochen.
 
 ## Grenzen bis zur Übertragung in eine Organisation
 
