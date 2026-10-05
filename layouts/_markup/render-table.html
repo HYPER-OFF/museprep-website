@@ -1,0 +1,23 @@
+{{- /* Ausrichtung als Klasse statt Inline-style (CSP: style-src 'self'). */ -}}
+<div class="table-wrap">
+<table>
+  <thead>
+    {{- range .THead }}
+    <tr>
+      {{- range . }}
+      <th{{ with .Alignment }} class="ta-{{ . }}"{{ end }}>{{ .Text }}</th>
+      {{- end }}
+    </tr>
+    {{- end }}
+  </thead>
+  <tbody>
+    {{- range .TBody }}
+    <tr>
+      {{- range . }}
+      <td{{ with .Alignment }} class="ta-{{ . }}"{{ end }}>{{ .Text }}</td>
+      {{- end }}
+    </tr>
+    {{- end }}
+  </tbody>
+</table>
+</div>

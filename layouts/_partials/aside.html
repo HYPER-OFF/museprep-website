@@ -1,0 +1,18 @@
+<aside class="side">
+  <div class="side-block">
+    <h2 class="side-hello">{{ T "hello" }}</h2>
+    <h3 class="mono-label">{{ upper (T "about_label") }}</h3>
+    <p><strong>{{ T "mission_label" }}</strong><br>{{ T "mission_text" }}</p>
+  </div>
+  <div class="side-block">
+    <h3 class="mono-label">{{ upper (T "youtube_label") }}</h3>
+    <p>{{ T "youtube_text" }}</p>
+    <a class="side-link ext yt" href="{{ site.Params.youtubeChannel }}" rel="noopener noreferrer" target="_blank">{{ T "youtube_link" }}</a>
+  </div>
+  {{- with site.GetPage "/artikel" }}
+  <div class="side-block">
+    <h3 class="mono-label">{{ upper (T "browse_label") }}</h3>
+    <a class="side-link" href="{{ .RelPermalink }}">{{ T "browse_link" }} →</a>
+  </div>
+  {{- end }}
+</aside>

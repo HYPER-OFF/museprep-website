@@ -1,0 +1,99 @@
+# Hugo-Konfiguration für museprep.com
+# Struktur nach Hugo 0.146+, fest eingetragene Version siehe scripts/tools.lock.
+
+baseURL = 'https://museprep.com/'
+title = 'MusePrep'
+
+# Inhalte kommen aus dem Inhalts-Repository. Lokal liegt dessen Klon neben
+# diesem Repository; im Workflow wird --contentDir explizit übergeben.
+contentDir = '../museprep-content/content'
+
+defaultContentLanguage = 'de'
+defaultContentLanguageInSubdir = false
+# Keine Weiterleitungsseite /de/ → / (wäre ein meta refresh).
+disableDefaultLanguageRedirect = true
+disableKinds = ['taxonomy', 'term']
+enableRobotsTXT = true
+pluralizeListTitles = false
+timeZone = 'Europe/Berlin'
+printPathWarnings = true
+# Kein zeitgesteuertes Veröffentlichen: das Datum ist nur Anzeige. Sonst
+# erschiene ein zukünftig datierter Artikel nie, weil derselbe Inhaltsstand
+# nur einmal gebaut wird.
+buildFuture = true
+
+[languages.de]
+  label = 'Deutsch'
+  locale = 'de-DE'
+  weight = 1
+  [languages.de.params]
+    youtubeCourse = 'https://www.youtube.com/playlist?list=PL6MpEgGwDCQ675WPMjtQF1a09PDTiVSrn'
+  [languages.de.permalinks.page]
+    artikel = '/artikel/:contentbasename/'
+  [languages.de.permalinks.section]
+    artikel = '/artikel/'
+
+[languages.en]
+  label = 'English'
+  locale = 'en-US'
+  weight = 2
+  [languages.en.params]
+    youtubeCourse = 'https://www.youtube.com/playlist?list=PLbebyDrUQr7sqLNIpYWXKE2bc133bIq7V'
+  [languages.en.permalinks.page]
+    artikel = '/articles/:contentbasename/'
+  [languages.en.permalinks.section]
+    artikel = '/articles/'
+
+# Originalbilder aus den Artikelordnern werden nie veröffentlicht, nur die
+# vom Render-Hook neu kodierten WebP-Fassungen.
+[[cascade]]
+  [cascade.build]
+    publishResources = false
+
+[outputs]
+  home = ['html', 'rss']
+  section = ['html', 'rss']
+  page = ['html']
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.parser]
+      wrapStandAloneImageWithinParagraph = false
+      [markup.goldmark.parser.attribute]
+        block = false
+        title = false
+    [markup.goldmark.renderer]
+      # Rohes HTML im Markdown bleibt aus.
+      unsafe = false
+  [markup.highlight]
+    # Klassen statt Inline-Styles, sonst greift die CSP.
+    noClasses = false
+
+[security]
+  enableInlineShortcodes = false
+  allowContent = ['^text/markdown$']
+  [security.exec]
+    allow = ['none']
+    osEnv = ['none']
+  [security.funcs]
+    getenv = ['none']
+  [security.http]
+    methods = ['none']
+    urls = ['none']
+
+[privacy]
+  [privacy.disqus]
+    disable = true
+  [privacy.googleAnalytics]
+    disable = true
+  [privacy.instagram]
+    disable = true
+  [privacy.vimeo]
+    disable = true
+  [privacy.x]
+    disable = true
+  [privacy.youTube]
+    disable = true
+
+[params]
+  youtubeChannel = 'https://www.youtube.com/@MusePrep'

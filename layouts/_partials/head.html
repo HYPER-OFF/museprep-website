@@ -1,0 +1,25 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+{{- $title := site.Title }}
+{{- if eq .Kind "404" }}{{ $title = printf "404 · %s" site.Title }}
+{{- else if not .IsHome }}{{ $title = printf "%s · %s" .Title site.Title }}{{ end }}
+<title>{{ $title }}</title>
+{{- with .Description | default site.Home.Description }}
+<meta name="description" content="{{ . }}">
+{{- end }}
+<link rel="canonical" href="{{ .Permalink }}">
+{{- range .AllTranslations }}
+<link rel="alternate" hreflang="{{ .Language.Lang }}" href="{{ .Permalink }}">
+{{- end }}
+{{- with site.Home.OutputFormats.Get "rss" }}
+<link rel="alternate" type="application/rss+xml" title="{{ site.Title }}" href="{{ .RelPermalink }}">
+{{- end }}
+<meta name="theme-color" content="#191970">
+<link rel="preload" href="/fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/newsreader-latin.woff2" as="font" type="font/woff2" crossorigin>
+{{- $css := resources.Get "css/main.css" | minify | fingerprint }}
+<link rel="stylesheet" href="{{ $css.RelPermalink }}" integrity="{{ $css.Data.Integrity }}">
+{{- with resources.Get "images/icon.png" }}
+<link rel="icon" type="image/png" sizes="32x32" href="{{ (.Process "resize 32x32 png").RelPermalink }}">
+<link rel="apple-touch-icon" href="{{ (.Process "resize 180x180 png").RelPermalink }}">
+{{- end }}

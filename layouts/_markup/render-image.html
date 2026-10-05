@@ -1,0 +1,39 @@
+{{- /*
+  Bilder im Text: nur Dateien aus dem Ordner der Seite (Page Bundle).
+  Erlaubt sind "name.jpg" und die Pfadform, die Pages CMS schreibt
+  ("/artikel/<ordner>/name.jpg"). Jedes Bild wird in feste Breiten und WebP
+  umgerechnet; das Original wird nicht veröffentlicht (publishResources=false).
+*/ -}}
+{{- $p := .PageInner -}}
+{{- $d := .Destination -}}
+{{- $prefix := printf "/%s" (replace $p.File.Dir "\\" "/") -}}
+{{- $name := strings.TrimPrefix $prefix $d -}}
+{{- if not (findRE `^[a-z0-9-]+\.(jpg|png|webp)$` $name 1) -}}
+  {{- errorf "%s: Bild %q muss im Ordner der Seite liegen (%sname.jpg oder name.jpg)" $p.File.Path $d $prefix -}}
+{{- end -}}
+{{- $img := $p.Resources.Get $name -}}
+{{- if or (not $img) (ne $img.ResourceType "image") -}}
+  {{- errorf "%s: Bild %q nicht im Ordner %s gefunden" $p.File.Path $d $p.File.Dir -}}
+{{- end -}}
+
+{{- $opts := "webp q80 photo" -}}
+{{- if eq $img.MediaType.SubType "png" }}{{ $opts = "webp q85 drawing" }}{{ end -}}
+
+{{- $srcset := slice -}}
+{{- $fallback := false -}}
+{{- range $w := slice 480 800 1200 1600 -}}
+  {{- if le $w $img.Width -}}
+    {{- $r := $img.Process (printf "resize %dx %s" $w $opts) -}}
+    {{- $srcset = $srcset | append (printf "%s %dw" $r.RelPermalink $r.Width) -}}
+    {{- if or (not $fallback) (le $w 800) }}{{ $fallback = $r }}{{ end -}}
+  {{- end -}}
+{{- end -}}
+{{- if not $fallback -}}
+  {{- $fallback = $img.Process $opts -}}
+  {{- $srcset = slice (printf "%s %dw" $fallback.RelPermalink $fallback.Width) -}}
+{{- end -}}
+
+{{- $alt := .PlainText | default $p.Title -}}
+{{- if .IsBlock }}<figure class="figure">{{ end -}}
+<img src="{{ $fallback.RelPermalink }}" srcset="{{ delimit $srcset ", " }}" sizes="(min-width: 50rem) 45rem, calc(100vw - 2.5rem)" width="{{ $fallback.Width }}" height="{{ $fallback.Height }}" alt="{{ $alt }}"{{ if ne .Ordinal 0 }} loading="lazy"{{ end }} decoding="async">
+{{- if .IsBlock }}{{ with .Title }}<figcaption>{{ . }}</figcaption>{{ end }}</figure>{{ end -}}

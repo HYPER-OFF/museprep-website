@@ -1,0 +1,8 @@
+{{- /* Vorschaubild: erstes Bild im Ordner des Artikels, neu kodiert als WebP. */ -}}
+{{- with index (.Resources.ByType "image") 0 -}}
+  {{- $opts := "webp q75 photo" -}}
+  {{- if eq .MediaType.SubType "png" }}{{ $opts = "webp q80 drawing" }}{{ end -}}
+  {{- $s := .Process (printf "fill 400x250 Center %s" $opts) -}}
+  {{- $l := .Process (printf "fill 800x500 Center %s" $opts) -}}
+  <img src="{{ $s.RelPermalink }}" srcset="{{ $s.RelPermalink }} 400w, {{ $l.RelPermalink }} 800w" sizes="200px" width="{{ $s.Width }}" height="{{ $s.Height }}" alt="" loading="lazy" decoding="async">
+{{- end -}}

@@ -1,0 +1,10 @@
+{{- /* Link je Sprache: Übersetzung der aktuellen Seite, sonst Startseite der Sprache. */ -}}
+{{- $page := .page -}}
+{{- $class := .class -}}
+{{- range hugo.Sites -}}
+  {{- $lang := .Language.Lang -}}
+  {{- $target := .Home.RelPermalink -}}
+  {{- range $page.AllTranslations }}{{ if eq .Language.Lang $lang }}{{ $target = .RelPermalink }}{{ end }}{{ end -}}
+  {{- $current := eq $lang site.Language.Lang }}
+  <a class="{{ $class }}{{ if $current }} is-current{{ end }}" href="{{ $target }}" hreflang="{{ $lang }}" lang="{{ $lang }}"{{ if $current }} aria-current="true"{{ end }}>{{ upper .Language.Label }}</a>
+{{- end -}}

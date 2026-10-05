@@ -1,0 +1,30 @@
+{{- $articles := site.GetPage "/artikel" -}}
+{{- $inArticles := and $articles (or (eq .Section "artikel") (eq . $articles)) -}}
+<div class="langbar">
+  <span class="langbar-label">{{ upper (T "language") }}</span>
+  {{ partial "lang-links.html" (dict "page" . "class" "langbar-link") }}
+</div>
+<header class="site-header">
+  <a class="logo" href="{{ site.Home.RelPermalink }}">
+    {{- with resources.Get "images/logo.png" }}
+    {{- $logo := .Process "resize x120 webp q90 drawing" }}
+    <img src="{{ $logo.RelPermalink }}" width="{{ div $logo.Width 2 }}" height="{{ div $logo.Height 2 }}" alt="MusePrep">
+    {{- end -}}
+  </a>
+  <nav class="nav" aria-label="{{ T "nav_label" }}">
+    <a href="{{ site.Home.RelPermalink }}"{{ if .IsHome }} class="is-active" aria-current="page"{{ end }}>{{ T "nav_home" }}</a>
+    {{- with $articles }}
+    <a href="{{ .RelPermalink }}"{{ if $inArticles }} class="is-active"{{ end }}{{ if eq $ . }} aria-current="page"{{ end }}>{{ T "nav_articles" }}</a>
+    {{- end }}
+  </nav>
+  <details class="menu">
+    <summary class="menu-button" aria-label="{{ T "menu" }}"><span class="menu-open" aria-hidden="true">☰</span><span class="menu-close" aria-hidden="true">✕</span></summary>
+    <div class="menu-panel">
+      <a class="menu-link" href="{{ site.Home.RelPermalink }}">{{ T "nav_home" }}</a>
+      {{- with $articles }}
+      <a class="menu-link" href="{{ .RelPermalink }}">{{ T "nav_articles" }}</a>
+      {{- end }}
+      <div class="menu-langs">{{ partial "lang-links.html" (dict "page" . "class" "menu-lang") }}</div>
+    </div>
+  </details>
+</header>

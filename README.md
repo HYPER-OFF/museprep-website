@@ -26,8 +26,41 @@ lädt erst nach manueller Freigabe per rsync hoch.
 - YouTube-Videos werden verlinkt, nicht eingebettet.
 - Prüfskripte nutzen nur die Python-Standardbibliothek.
 
+## Lokal arbeiten
+
+Beide Repositories liegen nebeneinander:
+
+```
+museprep_com/
+  museprep-website/   dieses Repository
+  museprep-content/   Klon des Inhalts-Repositorys
+```
+
+```sh
+scripts/install-hugo.sh        # Hugo laut scripts/tools.lock nach .bin/, SHA-256-geprüft
+.bin/hugo server               # Vorschau unter http://localhost:1313/
+scripts/build-local.sh         # Build wie im Workflow nach public/
+```
+
+`hugo.toml` zeigt mit `contentDir` auf `../museprep-content/content`; der
+Workflow übergibt den Pfad mit `--contentDir`.
+
+## Aufbau des Repositorys
+
+| Pfad | Inhalt |
+|---|---|
+| `hugo.toml` | Sprachen, Adressen, Sicherheitseinstellungen |
+| `layouts/` | eigene Vorlagen (keine Themes), Render-Hooks für Bilder, Links, Tabellen |
+| `layouts/_shortcodes/` | sperrt Hugos eingebaute Shortcodes |
+| `assets/css/main.css` | natives CSS nach dem Claude-Design |
+| `assets/images/` | Logo und Icon, werden beim Build neu kodiert |
+| `i18n/` | Oberflächentexte Deutsch/Englisch |
+| `static/fonts/` | Schriften als WOFF2 mit Lizenzen |
+| `scripts/` | Hugo-Installation, lokaler Build, später Prüfskripte |
+
 ## Stand
 
-Paket 1 (Repositories und Rechte) – die Einstellungen auf GitHub stehen in
-[`docs/SETUP.md`](docs/SETUP.md). Hugo-Grundgerüst, Prüfskripte und Workflow
-folgen in den nächsten Paketen.
+- Paket 1: Repositories und Rechte, siehe [`docs/SETUP.md`](docs/SETUP.md).
+- Paket 2: Hugo-Grundgerüst mit Design, zwei Sprachen, lokalen Schriften und
+  Bild-Hook.
+- Prüfskripte und Workflow folgen in den nächsten Paketen.

@@ -1,0 +1,47 @@
+{{- $section := .CurrentSection -}}
+{{- $asc := $section.Pages.ByDate -}}
+{{- $pos := 0 -}}{{- $prev := false -}}{{- $next := false -}}
+{{- range $i, $p := $asc -}}
+  {{- if eq $p $ -}}
+    {{- $pos = add $i 1 -}}
+    {{- if gt $i 0 }}{{ $prev = index $asc (sub $i 1) }}{{ end -}}
+    {{- if lt (add $i 1) (len $asc) }}{{ $next = index $asc (add $i 1) }}{{ end -}}
+  {{- end -}}
+{{- end -}}
+<div class="article-head">
+  <div class="crumbs"><a href="{{ $section.RelPermalink }}">{{ upper $section.Title }}</a><span aria-hidden="true">/</span><span>#{{ $pos }}</span></div>
+  <h1>{{ .Title }}</h1>
+  <div class="meta"><time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date | time.Format ":date_long" }}</time></div>
+</div>
+<div class="with-aside article-layout">
+  <article class="prose">
+    {{- with .Description }}<p class="lead">{{ . }}</p>{{ end }}
+    {{ .Content }}
+    <aside class="keep">
+      <div class="keep-glyph" aria-hidden="true">♪</div>
+      <h2>{{ T "keep_title" }}</h2>
+      <p>{{ T "keep_text" }}</p>
+      <a class="btn btn-gold" href="{{ site.Params.youtubeChannel }}" rel="noopener noreferrer" target="_blank">{{ T "keep_cta" }} <span aria-hidden="true">↗</span></a>
+    </aside>
+  </article>
+  {{ partial "aside.html" . }}
+</div>
+{{- $related := where $asc.Reverse "Permalink" "!=" .Permalink | first 9 }}
+{{- if or $related $prev $next }}
+<div class="related">
+  {{- with $related }}
+  <h2>{{ T "related" }}</h2>
+  <ul class="related-list">
+    {{- range . }}
+    <li><a href="{{ .RelPermalink }}"><span>{{ .Title }}</span><span aria-hidden="true">→</span></a></li>
+    {{- end }}
+  </ul>
+  {{- end }}
+  {{- if or $prev $next }}
+  <nav class="prevnext" aria-label="{{ T "related" }}">
+    {{- with $prev }}<a class="prev" href="{{ .RelPermalink }}"><span class="mono-label">← {{ upper (T "prev") }}</span><span class="prevnext-title">{{ .Title }}</span></a>{{ else }}<span></span>{{ end }}
+    {{- with $next }}<a class="next" href="{{ .RelPermalink }}"><span class="mono-label">{{ upper (T "next") }} →</span><span class="prevnext-title">{{ .Title }}</span></a>{{ end }}
+  </nav>
+  {{- end }}
+</div>
+{{- end }}

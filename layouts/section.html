@@ -1,0 +1,17 @@
+{{ define "main" }}
+<div class="soft-hero">
+  <div class="soft-hero-glyph" aria-hidden="true">♮</div>
+  <h1>{{ .Title }}</h1>
+  {{- with .Description }}<p>{{ . }}</p>{{ end }}
+</div>
+<div class="with-aside">
+  <div class="main-col">
+    {{- if .Pages }}
+    {{ partial "post-list.html" (dict "pages" .Pages) }}
+    {{- else }}
+    <p class="empty">{{ T "no_articles" }}</p>
+    {{- end }}
+  </div>
+  {{ partial "aside.html" . }}
+</div>
+{{ end }}

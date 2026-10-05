@@ -1,0 +1,11 @@
+<footer class="site-footer">
+  <div class="footer-legal">
+    <div class="mono-label">{{ upper (T "legal") }}</div>
+    <nav class="footer-links" aria-label="{{ T "legal" }}">
+      {{- with site.GetPage "/impressum" }}<a href="{{ .RelPermalink }}">{{ .Title }}</a>{{ end }}
+      {{- with site.GetPage "/datenschutz" }}<a href="{{ .RelPermalink }}">{{ .Title }}</a>{{ end }}
+      {{- with site.Home.OutputFormats.Get "rss" }}<a href="{{ .RelPermalink }}">{{ T "rss" }}</a>{{ end }}
+    </nav>
+  </div>
+  <div class="copyright">{{ T "copyright" (dict "Year" now.Year) }}</div>
+</footer>

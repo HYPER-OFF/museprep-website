@@ -1,0 +1,63 @@
+{{ define "main" }}
+{{- $articles := site.GetPage "/artikel" -}}
+{{- $other := "" -}}
+{{- range site.Home.AllTranslations }}{{ if ne .Language.Lang site.Language.Lang }}{{ $other = . }}{{ end }}{{ end -}}
+<section class="hero">
+  <div class="staff-lines" aria-hidden="true"></div>
+  <div class="hero-clef" aria-hidden="true">𝄞</div>
+  <div class="hero-copy">
+    <h1>{{ T "hero_title_a" }} <em>{{ T "hero_title_b" }}</em></h1>
+    <div class="hero-lead">{{ .Content }}</div>
+    <div class="actions">
+      {{- with $articles }}
+      <a class="btn btn-primary" href="{{ .RelPermalink }}">{{ T "hero_cta" }} <span aria-hidden="true">→</span></a>
+      {{- end }}
+      {{- with $other }}
+      <a class="btn btn-outline" href="{{ .RelPermalink }}" hreflang="{{ .Language.Lang }}" lang="{{ .Language.Lang }}">{{ T "hero_cta_other" }} <span aria-hidden="true">→</span></a>
+      {{- end }}
+    </div>
+  </div>
+  <a class="video-card" href="{{ site.Params.youtubeCourse }}" rel="noopener noreferrer" target="_blank">
+    <span class="video-card-label">{{ T "video_label" }}</span>
+    <span class="video-card-play" aria-hidden="true">▶</span>
+    <span class="video-card-cta">{{ T "video_cta" }} <span aria-hidden="true">↗</span></span>
+  </a>
+</section>
+
+<section class="paths">
+  <div class="section-head">
+    <h2>{{ T "latest_title" }}</h2>
+    <span class="glyphs" aria-hidden="true">♩ ♪ ♫</span>
+  </div>
+  {{- $latest := slice }}
+  {{- with $articles }}{{ $latest = .Pages.ByDate.Reverse | first 3 }}{{ end }}
+  {{- $glyphs := slice "𝄞" "♫" "♯" }}
+  {{- if $latest }}
+  <div class="cards">
+    {{- range $i, $p := $latest }}
+    <a class="card" href="{{ $p.RelPermalink }}">
+      <span class="card-top"><span class="card-num" aria-hidden="true">{{ printf "%02d" (add $i 1) }}</span><span class="card-glyph" aria-hidden="true">{{ index $glyphs $i }}</span></span>
+      <h3>{{ $p.Title }}</h3>
+      {{- with $p.Description }}<p>{{ . }}</p>{{ end }}
+    </a>
+    {{- end }}
+  </div>
+  {{- else }}
+  <p class="empty">{{ T "no_articles" }}</p>
+  {{- end }}
+  <div class="paths-foot">
+    {{- with $articles }}<a class="more" href="{{ .RelPermalink }}">{{ T "all_articles" }} <span aria-hidden="true">→</span></a>{{ end }}
+    {{- with T "more_in_english" }}
+      {{- $en := "" }}{{ range site.Home.AllTranslations }}{{ if eq .Language.Lang "en" }}{{ with .GetPage "/artikel" }}{{ $en = . }}{{ end }}{{ end }}{{ end }}
+      {{- with $en }}<p class="hint">{{ T "more_in_english" }} <a href="{{ .RelPermalink }}" hreflang="en">{{ T "more_in_english_link" }} →</a></p>{{ end }}
+    {{- end }}
+  </div>
+</section>
+
+<section class="band">
+  <div class="band-glyph" aria-hidden="true">♫</div>
+  <h2>{{ T "band_title" }}</h2>
+  <p>{{ T "band_text" }}</p>
+  <a class="btn btn-gold" href="{{ site.Params.youtubeChannel }}" rel="noopener noreferrer" target="_blank">{{ T "band_cta" }} <span aria-hidden="true">↗</span></a>
+</section>
+{{ end }}

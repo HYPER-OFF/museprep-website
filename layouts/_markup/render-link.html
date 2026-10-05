@@ -1,0 +1,24 @@
+{{- /*
+  Links im Text. Erlaubt: https/http nach außen, mailto, Anker (#…) und
+  interne Pfade. Alles andere (javascript:, data: …) bricht den Build ab.
+  Ob interne Ziele existieren und externe Domains erlaubt sind, prüft
+  scripts/check-output.py am fertigen HTML.
+*/ -}}
+{{- $d := .Destination -}}
+{{- $u := urls.Parse $d -}}
+{{- $external := false -}}
+{{- if $u.Scheme -}}
+  {{- if in (slice "https" "http") $u.Scheme -}}
+    {{- $external = true -}}
+  {{- else if ne $u.Scheme "mailto" -}}
+    {{- errorf "%s: Link %q – Schema %q ist nicht erlaubt" .PageInner.File.Path $d $u.Scheme -}}
+  {{- end -}}
+{{- else if hasPrefix $d "//" -}}
+  {{- errorf "%s: Link %q – bitte mit https:// angeben" .PageInner.File.Path $d -}}
+{{- end -}}
+{{- $yt := and $external (in (slice "youtube.com" "www.youtube.com" "m.youtube.com" "youtu.be") $u.Host) -}}
+<a href="{{ $d }}"
+  {{- with .Title }} title="{{ . }}"{{ end }}
+  {{- if $external }} class="{{ if $yt }}ext yt{{ else }}ext{{ end }}" rel="noopener noreferrer" target="_blank"{{ end -}}
+>{{ .Text }}</a>
+{{- /* kein Zeilenumbruch */ -}}

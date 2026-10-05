@@ -1,0 +1,21 @@
+{{- /* Nummerierte Artikelliste. Nummer = Position nach Datum (ältester = 1). */ -}}
+{{- $asc := .pages.ByDate -}}
+{{- $total := len $asc -}}
+{{- $glyphs := slice "𝄞" "♩" "♪" "♯" "♫" "𝄢" -}}
+<ol class="post-list" reversed>
+  {{- range $i, $p := $asc.Reverse }}
+  {{- $n := sub $total $i }}
+  <li>
+    <a class="post-item" href="{{ $p.RelPermalink }}">
+      <span class="post-num" aria-hidden="true">{{ printf "%02d" $n }}</span>
+      <span class="post-text">
+        <span class="post-title">{{ $p.Title }}</span>
+        {{- with $p.Description }}<span class="post-excerpt">{{ . }}</span>{{ end }}
+      </span>
+      <span class="post-thumb" aria-hidden="true">
+        {{- with partial "thumb.html" $p }}{{ . }}{{ else }}<span class="post-glyph">{{ index $glyphs (mod $n (len $glyphs)) }}</span>{{ end -}}
+      </span>
+    </a>
+  </li>
+  {{- end }}
+</ol>

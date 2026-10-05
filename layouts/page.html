@@ -1,0 +1,11 @@
+{{ define "main" }}
+{{- if eq .Section "artikel" }}
+{{ partial "article.html" . }}
+{{- else }}
+<div class="page-wrap">
+  {{- if in (slice "impressum" "datenschutz") .Section }}<div class="eyebrow">{{ upper (T "legal") }}</div>{{ end }}
+  <h1>{{ .Title }}</h1>
+  <div class="prose">{{ .Content }}</div>
+</div>
+{{- end }}
+{{ end }}
