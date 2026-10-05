@@ -63,4 +63,20 @@ Workflow übergibt den Pfad mit `--contentDir`.
 - Paket 1: Repositories und Rechte, siehe [`docs/SETUP.md`](docs/SETUP.md).
 - Paket 2: Hugo-Grundgerüst mit Design, zwei Sprachen, lokalen Schriften und
   Bild-Hook.
-- Prüfskripte und Workflow folgen in den nächsten Paketen.
+- Paket 3: Eingangsprüfung `scripts/check-content.py` mit Testfällen.
+- Ausgangsprüfung und Workflow folgen in den nächsten Paketen.
+
+## Eingangsprüfung
+
+```sh
+python3 scripts/check-content.py ../museprep-content   # Exit 0 = bestanden, 1 = Verstöße
+python3 -m unittest discover -s scripts/tests          # Testfälle
+```
+
+Geprüft wird das ganze Inhalts-Repository, bevor Hugo es liest: nur `.md`,
+`.jpg`, `.png`, `.webp` unter `content/` (daneben nur `.pages.yml`), keine
+Symlinks oder versteckten Dateien, Namen aus `a-z`, `0-9` und `-`, Bilder
+höchstens 2 MB und 40 Mio. Pixel mit passender Signatur, Texte höchstens
+200 KB, Kopfbereich als JSON mit nur `title`, `date`, `draft`, `description`,
+keine Shortcodes außer denen in `scripts/allowlist.json` und kein `}` im Text
+(sonst kann Pages CMS die Datei nicht öffnen).

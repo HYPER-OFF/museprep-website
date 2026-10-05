@@ -11,7 +11,9 @@
 <div class="article-head">
   <div class="crumbs"><a href="{{ $section.RelPermalink }}">{{ upper $section.Title }}</a><span aria-hidden="true">/</span><span>#{{ $pos }}</span></div>
   <h1>{{ .Title }}</h1>
+  {{- if not .Date.IsZero }}
   <div class="meta"><time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date | time.Format ":date_long" }}</time></div>
+  {{- end }}
 </div>
 <div class="with-aside article-layout">
   <article class="prose">

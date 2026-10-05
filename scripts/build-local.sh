@@ -9,7 +9,7 @@ content="$(cd "${1:-$root/../museprep-content}" && pwd)"
 
 "$root/scripts/install-hugo.sh" >/dev/null
 
-# Eingangsprüfung (Paket 3): scripts/check-content.py "$content"
+python3 "$root/scripts/check-content.py" "$content"
 
 rm -rf "$root/public"
 "$root/.bin/hugo" --source "$root" --contentDir "$content/content" \
