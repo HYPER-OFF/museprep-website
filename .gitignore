@@ -1,0 +1,10 @@
+# Hugo-Ausgabe und Zwischenstände
+public/
+resources/
+.hugo_build.lock
+
+# Lokal installierte Werkzeuge (scripts/install-hugo.sh)
+.bin/
+
+# macOS
+.DS_Store
