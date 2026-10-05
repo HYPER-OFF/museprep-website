@@ -122,9 +122,18 @@ tools/check-live-redirects.sh                                      # nach der Do
 `tools/migrate-wordpress.py` holt die Beiträge über die WordPress-API, wandelt
 sie in Markdown um und schreibt außerdem den Weiterleitungsblock in
 `static/.htaccess` und die Liste `tools/old-urls.txt`. Mit `--with-images`
-lädt es auch die Bilder. Vorsicht: Bilder in Ordnern, die nur `index.en.md`
-enthalten, sieht Hugo nicht (Dateien ohne Sprachkennung gehören zur
-Standardsprache Deutsch) – siehe offene Punkte in `docs/MIGRATION.md`.
+lädt es auch die Bilder nach `content/bilder/`.
+
+## Bilder
+
+Alle Bilder liegen zentral in `content/bilder/` im Inhalts-Repository; im Text
+stehen sie als `/bilder/name.jpg` (so schreibt es Pages CMS). Der Ordner wird
+nicht als Seite ausgegeben (Cascade in `hugo.toml`), der Render-Hook holt die
+Bilder von dort und rechnet sie in WebP um. Warum nicht im Artikelordner:
+Hugo ordnet Bilder ohne Sprachkennung der Standardsprache zu – ein Ordner mit
+nur `index.en.md` sähe seine Bilder nicht –, und in Pages CMS führen
+überlappende Media- und Inhaltsordner zu Cache-Fehlern („Cannot read
+properties of null“).
 
 ## Quiz
 

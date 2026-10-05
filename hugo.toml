@@ -44,8 +44,18 @@ buildFuture = true
   [languages.en.permalinks.section]
     artikel = '/articles/'
 
-# Originalbilder aus den Artikelordnern werden nie veröffentlicht, nur die
-# vom Render-Hook neu kodierten WebP-Fassungen.
+# Zentraler Bilderordner content/bilder/: keine eigene Seite, nicht in Listen.
+# Die Bilder holt der Render-Hook von dort (für jede Sprache).
+[[cascade]]
+  [cascade.build]
+    list = 'never'
+    render = 'never'
+    publishResources = false
+  [cascade.target]
+    path = '{/bilder,/bilder/**}'
+
+# Originalbilder werden nie veröffentlicht, nur die vom Render-Hook neu
+# kodierten WebP-Fassungen.
 [[cascade]]
   [cascade.build]
     publishResources = false

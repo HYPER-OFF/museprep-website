@@ -1,5 +1,17 @@
-{{- /* Vorschaubild: erstes Bild im Ordner des Artikels, neu kodiert als WebP. */ -}}
-{{- with index (.Resources.ByType "image") 0 -}}
+{{- /*
+  Vorschaubild: das erste Bild aus dem zentralen Bilderordner, das im Text
+  vorkommt ("/bilder/name.jpg"), sonst das erste Bild im Ordner der Seite.
+  Neu kodiert als WebP.
+*/ -}}
+{{- $img := false -}}
+{{- with index (findRESubmatch `\]\(/bilder/([a-z0-9-]+\.(?:jpg|png|webp))` .RawContent 1) 0 -}}
+  {{- $name := index . 1 -}}
+  {{- range hugo.Sites -}}
+    {{- if not $img }}{{ with .GetPage "/bilder" }}{{ with .Resources.Get $name }}{{ $img = . }}{{ end }}{{ end }}{{ end -}}
+  {{- end -}}
+{{- end -}}
+{{- if not $img }}{{ with index (.Resources.ByType "image") 0 }}{{ $img = . }}{{ end }}{{ end -}}
+{{- with $img -}}
   {{- $opts := "webp q75 photo" -}}
   {{- if eq .MediaType.SubType "png" }}{{ $opts = "webp q80 drawing" }}{{ end -}}
   {{- $s := .Process (printf "fill 400x250 Center %s" $opts) -}}

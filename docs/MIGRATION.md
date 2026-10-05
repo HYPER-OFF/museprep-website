@@ -45,12 +45,13 @@ und Datum geprüft). Wo WordPress heute anders weiterleitet, steht es dabei.
 | `understanding-accidentals-music-theory-your-complete-guide-to-sharps-and-flats` | `accidentals-music-theory` | gleich |
 | `why-daily-music-challenges-boost-your-learning` | `daily-music-challenges` | gleich |
 
-### Bilder in rein englischen Artikeln
+### Bilder
 
-Hugo ordnet Bilder ohne Sprachkennung der Standardsprache (Deutsch) zu. In einem
-Ordner, der nur `index.en.md` enthält, sieht die englische Seite ihre Bilder deshalb
-nicht (Hugo 0.167, nachgestellt mit einem Minimalprojekt). Betrifft später auch
-Bild-Uploads über Pages CMS in solche Artikel. Lösung offen.
+Bilder liegen zentral in `content/bilder/` (im Text `/bilder/name.jpg`), nicht im
+Artikelordner. Grund: Hugo ordnet Bilder ohne Sprachkennung der Standardsprache zu,
+ein rein englischer Artikelordner sähe seine Bilder sonst nicht; außerdem überschneiden
+sich so Media- und Inhaltsordner in Pages CMS nicht. Mit `--with-images` schreibt das
+Werkzeug die Bilder als `<slug>-<name>` dorthin.
 
 ### Externe Link-Ziele
 

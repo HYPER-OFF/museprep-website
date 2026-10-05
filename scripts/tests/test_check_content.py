@@ -123,6 +123,12 @@ class CheckContentTest(unittest.TestCase):
     def test_valid_tree_passes(self):
         self.assertPasses()
 
+    def test_central_image_folder_passes(self):
+        self.write("content/bilder/index.de.md", page({"title": "Bilder"}))
+        self.write("content/bilder/c-dur-tonleiter.jpg", jpeg_bytes())
+        self.write("content/bilder/skizze.png", png_bytes())
+        self.assertPasses()
+
     # Abnahme Paket 3: verbotene Datei, Symlink, gesperrtes Feld, fremder Shortcode
 
     def test_forbidden_file_svg(self):

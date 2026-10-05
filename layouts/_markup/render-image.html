@@ -1,8 +1,9 @@
 {{- /*
   Bilder im Text: nur Dateien aus Seitenordnern (Page Bundles) im Inhalts-Repository.
-  Erlaubt sind "name.jpg" (eigener Ordner) und die Pfadform, die Pages CMS
-  schreibt ("/artikel/<ordner>/name.jpg") – auch aus dem Ordner eines anderen
-  Artikels. Alles andere (fremde Server, Pfade ohne Bundle) bricht den Build ab.
+  Üblich ist der zentrale Bilderordner, so schreibt es Pages CMS: "/bilder/name.jpg".
+  Außerdem erlaubt: "name.jpg" (eigener Ordner) und "/artikel/<ordner>/name.jpg".
+  Gesucht wird in jeder Sprache, denn Bilder ohne Sprachkennung gehören in Hugo
+  zur Standardsprache. Alles andere (fremde Server, Pfade ohne Bundle) bricht ab.
   Jedes Bild wird in feste Breiten und WebP umgerechnet; Originale werden nicht
   veröffentlicht (publishResources=false).
 */ -}}
@@ -30,7 +31,7 @@
   {{- end -}}
 {{- end -}}
 {{- if or (not $img) (ne $img.ResourceType "image") -}}
-  {{- errorf "%s: Bild %q nicht gefunden – erlaubt sind Bilder aus Artikelordnern im Inhalts-Repository" $p.File.Path $d -}}
+  {{- errorf "%s: Bild %q nicht gefunden – Bilder gehören nach content/bilder/ (im Text: /bilder/name.jpg)" $p.File.Path $d -}}
 {{- else -}}
 
 {{- $opts := "webp q80 photo" -}}

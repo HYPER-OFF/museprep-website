@@ -251,7 +251,7 @@ class Converter:
             base = re.sub(r"\.[A-Za-z0-9]+$", "", base)
             base = re.sub(r"-\d+x\d+$", "", base)
             base = re.sub(r"-scaled$", "", base)
-            name = slugify(base)
+            name = slugify("%s-%s" % (self.slug, base), limit=80)
             taken = {img["name"] for img in self.images.values()}
             candidate, n = name, 2
             while candidate in taken:
@@ -280,7 +280,7 @@ class Converter:
         entry = self.register_image(src, alt)
         title = ' "%s"' % caption.replace('"', '\\"') if caption else ""
         alt_md = alt.replace("\\", "\\\\").replace("[", "\\[").replace("]", "\\]")
-        return "![%s](/artikel/%s/%s{ext}%s)" % (alt_md, self.slug, entry["name"], title)
+        return "![%s](/bilder/%s{ext}%s)" % (alt_md, entry["name"], title)
 
     # Links
 
@@ -635,10 +635,11 @@ def migrate_post(post, slugs, content_dir, image_cache, with_images=False):
             alt = plain(media.get("alt_text") or "") or plain(post["title"]["rendered"])
             entry = conv.register_image(media["source_url"], alt)
             alt_md = alt.replace("\\", "\\\\").replace("[", "\\[").replace("]", "\\]")
-            blocks.insert(0, "![%s](/artikel/%s/%s{ext})" % (alt_md, slug, entry["name"]))
+            blocks.insert(0, "![%s](/bilder/%s{ext})" % (alt_md, entry["name"]))
 
     folder = os.path.join(content_dir, "artikel", slug)
     os.makedirs(folder, exist_ok=True)
+    image_dir = os.path.join(content_dir, "bilder")
     exts, failed = {}, []
     for entry in conv.images.values():
         url = entry["url"].replace("&amp;", "&")
@@ -646,7 +647,8 @@ def migrate_post(post, slugs, content_dir, image_cache, with_images=False):
             if url not in image_cache:
                 image_cache[url] = http_get(url)
                 time.sleep(0.2)
-            ext, w, h = convert_image(image_cache[url], os.path.join(folder, entry["name"]))
+            os.makedirs(image_dir, exist_ok=True)
+            ext, w, h = convert_image(image_cache[url], os.path.join(image_dir, entry["name"]))
             exts[entry["name"]] = "." + ext
         except Exception as exc:  # Bild fehlt → Bild aus dem Text entfernen
             failed.append(entry["name"])
@@ -657,9 +659,8 @@ def migrate_post(post, slugs, content_dir, image_cache, with_images=False):
 
     body = "\n\n".join(blocks)
     for name in failed:
-        body = re.sub(r"!\[[^\]]*\]\(/artikel/%s/%s\{ext\}[^)]*\)\n*" % (re.escape(slug), re.escape(name)), "", body)
-    body = re.sub(r"/artikel/%s/([a-z0-9-]+)\{ext\}" % re.escape(slug),
-                  lambda m: "/artikel/%s/%s%s" % (slug, m.group(1), exts[m.group(1)]), body)
+        body = re.sub(r"!\[[^\]]*\]\(/bilder/%s\{ext\}[^)]*\)\n*" % re.escape(name), "", body)
+    body = re.sub(r"/bilder/([a-z0-9-]+)\{ext\}", lambda m: "/bilder/%s%s" % (m.group(1), exts[m.group(1)]), body)
     body = re.sub(r"\n{3,}", "\n\n", body).strip() + "\n"
 
     assert "}" not in body, slug
@@ -823,11 +824,12 @@ def write_report(path, results):
               "| Früherer Name | Heutiger Beitrag | WordPress leitet heute auf |", "|---|---|---|"]
     lines += ["| `%s` | `%s` | %s |" % (o, n, "`%s`" % OLD_SLUG_WP_DIFFERS[o] if o in OLD_SLUG_WP_DIFFERS else "gleich")
               for o, n in sorted(OLD_SLUGS.items())]
-    lines += ["", "### Bilder in rein englischen Artikeln", "",
-              "Hugo ordnet Bilder ohne Sprachkennung der Standardsprache (Deutsch) zu. In einem",
-              "Ordner, der nur `index.en.md` enthält, sieht die englische Seite ihre Bilder deshalb",
-              "nicht (Hugo 0.167, nachgestellt mit einem Minimalprojekt). Betrifft später auch",
-              "Bild-Uploads über Pages CMS in solche Artikel. Lösung offen.", "",
+    lines += ["", "### Bilder", "",
+              "Bilder liegen zentral in `content/bilder/` (im Text `/bilder/name.jpg`), nicht im",
+              "Artikelordner. Grund: Hugo ordnet Bilder ohne Sprachkennung der Standardsprache zu,",
+              "ein rein englischer Artikelordner sähe seine Bilder sonst nicht; außerdem überschneiden",
+              "sich so Media- und Inhaltsordner in Pages CMS nicht. Mit `--with-images` schreibt das",
+              "Werkzeug die Bilder als `<slug>-<name>` dorthin.", "",
               "### Externe Link-Ziele", "", "| Domain | Links |", "|---|---|"]
     lines += ["| %s | %d |" % (d, n) for d, n in sorted(domains.items(), key=lambda x: (-x[1], x[0]))]
     lines += ["", "## Alle Beiträge", "", "| Alte Adresse | Neue Adresse | Bilder weggelassen |", "|---|---|---|"]
