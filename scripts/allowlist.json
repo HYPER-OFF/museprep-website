@@ -1,10 +1,14 @@
 {
   "shortcodes": [],
   "external_domains": [
-    "youtube.com",
-    "www.youtube.com",
     "m.youtube.com",
-    "youtu.be"
+    "www.youtube.com",
+    "youtu.be",
+    "youtube.com",
+    "online.berklee.edu",
+    "www.coursera.org",
+    "www.musictheory.net",
+    "www.teoria.com"
   ],
   "elements": []
 }

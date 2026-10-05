@@ -45,3 +45,132 @@ ErrorDocument 404 /404.html
 </IfModule>
 
 # --- 301-Weiterleitungen der alten WordPress-Adressen (Paket 6) ---
+# Erzeugt von tools/migrate-wordpress.py – nicht von Hand ändern.
+# Reihenfolge zählt: die erste passende Regel gilt.
+
+# Beiträge (auch alte Adressen mit Datum davor) → englische Artikel
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?2026-the-year-you-finally-understand-music/?$ /en/articles/2026-the-year-you-finally-understand-music/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?about-the-creator-of-silent-night/?$ /en/articles/about-the-creator-of-silent-night/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?accidentals-music-theory/?$ /en/articles/accidentals-music-theory/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?advanced-chord-positions/?$ /en/articles/advanced-chord-positions/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?advancing-in-music-learning/?$ /en/articles/advancing-in-music-learning/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?basic-music-theory/?$ /en/articles/basic-music-theory/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?basic-music-time-signature/?$ /en/articles/basic-music-time-signature/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?basic-musical-keys/?$ /en/articles/basic-musical-keys/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?basics-of-chord-inversions/?$ /en/articles/basics-of-chord-inversions/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?beginner-chords-101-learn-your-first-chords-in-minutes/?$ /en/articles/beginner-chords-101-learn-your-first-chords-in-minutes/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?beginner-melody-writing/?$ /en/articles/beginner-melody-writing/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?beginner-music-composition/?$ /en/articles/beginner-music-composition/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?borodin-in-the-steppes-of-central-asia/?$ /en/articles/borodin-in-the-steppes-of-central-asia/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?chord-construction-steps/?$ /en/articles/chord-construction-steps/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?chord-progressions-for-beginners/?$ /en/articles/chord-progressions-for-beginners/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?chord-structure/?$ /en/articles/chord-structure/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?chromaticism-in-flight-of-the-bumblebee/?$ /en/articles/chromaticism-in-flight-of-the-bumblebee/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?clara-schumann-biography/?$ /en/articles/clara-schumann-biography/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?daily-music-challenges/?$ /en/articles/daily-music-challenges/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?debussy-voiles-interpretation/?$ /en/articles/debussy-voiles-interpretation/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?definition-of-music-staff/?$ /en/articles/definition-of-music-staff/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?difference-between-octaves/?$ /en/articles/difference-between-octaves/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?digital-tools-for-beginner-musicians/?$ /en/articles/digital-tools-for-beginner-musicians/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?dreamlike-music/?$ /en/articles/dreamlike-music/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?dvoraks-ninth-symphony/?$ /en/articles/dvoraks-ninth-symphony/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?dynamics-in-music/?$ /en/articles/dynamics-in-music/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?easy-key-signature-guide/?$ /en/articles/easy-key-signature-guide/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?enhancing-music-skills-with-half-steps/?$ /en/articles/enhancing-music-skills-with-half-steps/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?exploring-different-seventh-chords-styles/?$ /en/articles/exploring-different-seventh-chords-styles/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?half-steps-and-whole-steps-in-music/?$ /en/articles/half-steps-and-whole-steps-in-music/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?half-steps-in-music/?$ /en/articles/half-steps-in-music/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?how-to-identify-the-key-of-a-piece-with-real-life-examples/?$ /en/articles/how-to-identify-the-key-of-a-piece-with-real-life-examples/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?identify-intervals-steps/?$ /en/articles/identify-intervals-steps/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?inner-hearing/?$ /en/articles/inner-hearing/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?learn-to-read-notes/?$ /en/articles/learn-to-read-notes/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?major-and-minor-intervals/?$ /en/articles/major-and-minor-intervals/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?major-scale/?$ /en/articles/major-scale/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?major-scale-concepts-for-beginners/?$ /en/articles/major-scale-concepts-for-beginners/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?major-scale-steps/?$ /en/articles/major-scale-steps/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?mastering-key-signatures-and-modulation-new-video-series-in-2026/?$ /en/articles/mastering-key-signatures-and-modulation-new-video-series-in-2026/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?minor-scale/?$ /en/articles/minor-scale/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?mistakes-music-beginners-should-avoid/?$ /en/articles/mistakes-music-beginners-should-avoid/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?morning-mood/?$ /en/articles/morning-mood/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?motif-in-music/?$ /en/articles/motif-in-music/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?museprep-shorts/?$ /en/articles/museprep-shorts/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?music-analysis-for-students/?$ /en/articles/music-analysis-for-students/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?music-practice-motivation/?$ /en/articles/music-practice-motivation/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?music-routine-planner/?$ /en/articles/music-routine-planner/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?music-theory-back-to-school-essentials/?$ /en/articles/music-theory-back-to-school-essentials/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?music-theory-basics/?$ /en/articles/music-theory-basics/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?music-theory-for-beginners/?$ /en/articles/music-theory-for-beginners/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?music-theory-for-beginners-online/?$ /en/articles/music-theory-for-beginners-online/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?music-theory-for-kids/?$ /en/articles/music-theory-for-kids/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?music-theory-in-the-classroom/?$ /en/articles/music-theory-in-the-classroom/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?music-theory-lessons-online/?$ /en/articles/music-theory-lessons-online/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?musical-intervals/?$ /en/articles/musical-intervals/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?musical-notation-basics/?$ /en/articles/musical-notation-basics/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?musical-octaves-explained/?$ /en/articles/musical-octaves-explained/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?musical-staff-basics/?$ /en/articles/musical-staff-basics/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?musical-symbols-guide/?$ /en/articles/musical-symbols-guide/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?natural-sign-in-music/?$ /en/articles/natural-sign-in-music/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?pentatonic-scale-for-beginners/?$ /en/articles/pentatonic-scale-for-beginners/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?perfect-intervals/?$ /en/articles/perfect-intervals/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?perfect-intervals-2/?$ /en/articles/perfect-intervals-2/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?perfect-intervals-explained/?$ /en/articles/perfect-intervals-explained/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?perfect-intervals-types/?$ /en/articles/perfect-intervals-types/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?practical-music-theory/?$ /en/articles/practical-music-theory/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?practice-natural-sign-in-music/?$ /en/articles/practice-natural-sign-in-music/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?relative-keys-explained/?$ /en/articles/relative-keys-explained/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?romantic-era-composer/?$ /en/articles/romantic-era-composer/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?sight-reading-for-beginners/?$ /en/articles/sight-reading-for-beginners/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?special-needs-music-resources/?$ /en/articles/special-needs-music-resources/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?teaching-music-theory-without-a-textbook/?$ /en/articles/teaching-music-theory-without-a-textbook/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?the-chromatic-scale/?$ /en/articles/the-chromatic-scale/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?the-exotic-minor-scale-in-music/?$ /en/articles/the-exotic-minor-scale-in-music/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?theory-in-repertoire/?$ /en/articles/theory-in-repertoire/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?timbre-in-music/?$ /en/articles/timbre-in-music/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?types-of-minor-scales/?$ /en/articles/types-of-minor-scales/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?understanding-pentatonic-scale-notes/?$ /en/articles/understanding-pentatonic-scale-notes/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?understanding-rhythm/?$ /en/articles/understanding-rhythm/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?understanding-seventh-chords-formula/?$ /en/articles/understanding-seventh-chords-formula/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?understanding-the-ascending-melodic-minor-scale/?$ /en/articles/understanding-the-ascending-melodic-minor-scale/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?variants-of-the-minor-scale/?$ /en/articles/variants-of-the-minor-scale/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?what-is-a-chord-in-music/?$ /en/articles/what-is-a-chord-in-music/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?what-is-a-melody/?$ /en/articles/what-is-a-melody/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?what-is-a-scale-in-music/?$ /en/articles/what-is-a-scale-in-music/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?what-is-an-interval/?$ /en/articles/what-is-an-interval/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?what-is-the-circle-of-fifths/?$ /en/articles/what-is-the-circle-of-fifths/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?whole-steps-and-half-steps/?$ /en/articles/whole-steps-and-half-steps/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?whole-tone-scales/?$ /en/articles/whole-tone-scales/
+
+# Frühere Namen umbenannter Beiträge
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?5-romantic-era-composer-highlights-you-should-know/?$ /en/articles/romantic-era-composer/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?enhancing-music-skills-with-half-steps-introduction-for-beginners/?$ /en/articles/enhancing-music-skills-with-half-steps/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?learn-to-read-notes-mastering-pitches-in-treble-and-bass-clef/?$ /en/articles/learn-to-read-notes/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?musical-notation-clefs-natural-notes/?$ /en/articles/musical-notation-basics/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?musical-staff-beginners-guide/?$ /en/articles/musical-staff-basics/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?natural-sign-in-music-your-complete-guide-to-understanding-musical-notation/?$ /en/articles/natural-sign-in-music/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?teaching-music-theory-without-a-textbook-creative-music-education/?$ /en/articles/teaching-music-theory-without-a-textbook/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?understanding-accidentals-music-theory-your-complete-guide-to-sharps-and-flats/?$ /en/articles/accidentals-music-theory/
+RedirectMatch 301 ^/(?:\d{4}/\d{2}/\d{2}/)?why-daily-music-challenges-boost-your-learning/?$ /en/articles/daily-music-challenges/
+
+# Unterseiten alter Beiträge (Feed, AMP, Einbettung)
+RedirectMatch 301 ^/(2026-the-year-you-finally-understand-music|about-the-creator-of-silent-night|accidentals-music-theory|advanced-chord-positions|advancing-in-music-learning|basic-music-theory|basic-music-time-signature|basic-musical-keys|basics-of-chord-inversions|beginner-chords-101-learn-your-first-chords-in-minutes|beginner-melody-writing|beginner-music-composition|borodin-in-the-steppes-of-central-asia|chord-construction-steps|chord-progressions-for-beginners|chord-structure|chromaticism-in-flight-of-the-bumblebee|clara-schumann-biography|daily-music-challenges|debussy-voiles-interpretation|definition-of-music-staff|difference-between-octaves|digital-tools-for-beginner-musicians|dreamlike-music|dvoraks-ninth-symphony|dynamics-in-music|easy-key-signature-guide|enhancing-music-skills-with-half-steps|exploring-different-seventh-chords-styles|half-steps-and-whole-steps-in-music|half-steps-in-music|how-to-identify-the-key-of-a-piece-with-real-life-examples|identify-intervals-steps|inner-hearing|learn-to-read-notes|major-and-minor-intervals|major-scale|major-scale-concepts-for-beginners|major-scale-steps|mastering-key-signatures-and-modulation-new-video-series-in-2026|minor-scale|mistakes-music-beginners-should-avoid|morning-mood|motif-in-music|museprep-shorts|music-analysis-for-students|music-practice-motivation|music-routine-planner|music-theory-back-to-school-essentials|music-theory-basics|music-theory-for-beginners|music-theory-for-beginners-online|music-theory-for-kids|music-theory-in-the-classroom|music-theory-lessons-online|musical-intervals|musical-notation-basics|musical-octaves-explained|musical-staff-basics|musical-symbols-guide|natural-sign-in-music|pentatonic-scale-for-beginners|perfect-intervals|perfect-intervals-2|perfect-intervals-explained|perfect-intervals-types|practical-music-theory|practice-natural-sign-in-music|relative-keys-explained|romantic-era-composer|sight-reading-for-beginners|special-needs-music-resources|teaching-music-theory-without-a-textbook|the-chromatic-scale|the-exotic-minor-scale-in-music|theory-in-repertoire|timbre-in-music|types-of-minor-scales|understanding-pentatonic-scale-notes|understanding-rhythm|understanding-seventh-chords-formula|understanding-the-ascending-melodic-minor-scale|variants-of-the-minor-scale|what-is-a-chord-in-music|what-is-a-melody|what-is-a-scale-in-music|what-is-an-interval|what-is-the-circle-of-fifths|whole-steps-and-half-steps|whole-tone-scales)/(?:feed|amp|embed)/?$ /en/articles/$1/
+
+# Seiten
+RedirectMatch 301 ^/(?:start-here|about|free-downloads|entrance-exam-check)/?$ /en/
+RedirectMatch 301 ^/deutsch-lernen/?$ /
+RedirectMatch 301 ^/legal-policies/(?:privacy-policy-2|cookie-policy-eu)/?$ /en/datenschutz/
+RedirectMatch 301 ^/legal-policies(?:/(?:legal-notice|disclaimer|affiliate-disclosure))?/?$ /en/impressum/
+
+# Kategorien, Schlagwörter, Autoren, Archive
+RedirectMatch 301 ^/(?:category|tag|author)(?:/.*)?$ /en/articles/
+RedirectMatch 301 ^/\d{4}(?:/\d{2}){0,2}/?$ /en/articles/
+RedirectMatch 301 ^/page/\d+/?$ /en/articles/
+
+# Feeds und Sitemaps
+RedirectMatch 301 ^/feed/?$ /en/index.xml
+RedirectMatch 301 ^/(?:sitemap_index|sitemap-home|sitemap-posts|sitemap-pages|post-sitemap|page-sitemap)\.xml$ /sitemap.xml
+
+# Dateien der alten Seite (Arbeitsblätter vorerst nicht übernommen)
+RedirectMatch 301 ^/wp-content/uploads/2025/11/Reading-Music_Practice-Sheet\.pdf$ /en/
+RedirectMatch 301 ^/wp-content/uploads/2025/11/Ubungsblatt-Notenlernen-1\.pdf$ /
+RedirectMatch 410 ^/(?:wp-admin|wp-includes|wp-content|wp-json|comments)(?:/.*)?$
+RedirectMatch 410 ^/(?:wp-login|xmlrpc|wp-cron)\.php$

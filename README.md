@@ -72,6 +72,9 @@ Workflow übergibt den Pfad mit `--contentDir`.
   und rsync-Upload, `static/.htaccess` mit Sicherheits-Kopfzeilen,
   Dependabot. Einrichtung und Ablauf: [`docs/SETUP.md`](docs/SETUP.md),
   Abschnitte 5–7.
+- Paket 6: alle 90 WordPress-Beiträge als `index.en.md` übertragen (ohne
+  Bilder), 301-Weiterleitungen aller alten Adressen in `static/.htaccess`,
+  Bericht in [`docs/MIGRATION.md`](docs/MIGRATION.md).
 
 ## Eingangsprüfung
 
@@ -103,3 +106,18 @@ nach außen nur zu Domains aus `external_domains`; interne Links und Quellen
 müssen existieren; nur erlaubte Dateitypen (keine Originalbilder, kein PHP).
 Mit `--manifest-out` und `--links-out` schreibt das Skript Prüfsummen aller
 Dateien und die Liste externer Links für den Bericht im Workflow.
+
+## Migration und Weiterleitungen
+
+```sh
+tools/migrate-wordpress.py --content ../museprep-content/content   # erneut übertragen
+python3 -m unittest scripts/tests/test_redirects.py                 # Weiterleitungen prüfen
+tools/check-live-redirects.sh                                      # nach der Domainumstellung
+```
+
+`tools/migrate-wordpress.py` holt die Beiträge über die WordPress-API, wandelt
+sie in Markdown um und schreibt außerdem den Weiterleitungsblock in
+`static/.htaccess` und die Liste `tools/old-urls.txt`. Mit `--with-images`
+lädt es auch die Bilder. Vorsicht: Bilder in Ordnern, die nur `index.en.md`
+enthalten, sieht Hugo nicht (Dateien ohne Sprachkennung gehören zur
+Standardsprache Deutsch) – siehe offene Punkte in `docs/MIGRATION.md`.

@@ -585,6 +585,8 @@ a {
     > * + * { margin-top: 10px; }
   }
   hr { border: 0; border-top: 1px solid var(--ink); width: 100%; }
+  /* Übertragene Beiträge setzen vor jede Zwischenüberschrift eine Linie. */
+  hr + h2 { margin-top: 0; padding-top: 0; border-top: 0; }
   code { font: .88em var(--mono); background: var(--lavender); padding: .1em .35em; }
   pre {
     background: var(--lavender);

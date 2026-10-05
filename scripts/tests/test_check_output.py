@@ -281,7 +281,7 @@ class RealBuildTest(unittest.TestCase):
         tmp = tempfile.mkdtemp(prefix="real-build-")
         try:
             subprocess.run([hugo, "--source", WEBSITE, "--contentDir", content, "--destination", tmp,
-                            "--minify", "--panicOnWarning", "--quiet"], check=True)
+                            "--minify", "--panicOnWarning", "--quiet", "--noBuildLock"], check=True)
             domains, elements = co.load_allowlist(os.path.join(HERE, "..", "allowlist.json"))
             report = co.check_site(co.Site(tmp, "https://museprep.com/", domains, elements))
             self.assertEqual(report.violations, [])

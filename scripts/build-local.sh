@@ -13,7 +13,7 @@ python3 "$root/scripts/check-content.py" "$content"
 
 rm -rf "$root/public"
 "$root/.bin/hugo" --source "$root" --contentDir "$content/content" \
-  --minify --panicOnWarning --printPathWarnings
+  --minify --panicOnWarning --printPathWarnings --noBuildLock
 
 python3 "$root/scripts/check-output.py" "$root/public" --require-htaccess
 

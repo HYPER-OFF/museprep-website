@@ -31,7 +31,7 @@
 {{- end -}}
 {{- if or (not $img) (ne $img.ResourceType "image") -}}
   {{- errorf "%s: Bild %q nicht gefunden – erlaubt sind Bilder aus Artikelordnern im Inhalts-Repository" $p.File.Path $d -}}
-{{- end -}}
+{{- else -}}
 
 {{- $opts := "webp q80 photo" -}}
 {{- if eq $img.MediaType.SubType "png" }}{{ $opts = "webp q85 drawing" }}{{ end -}}
@@ -54,3 +54,4 @@
 {{- if .IsBlock }}<figure class="figure">{{ end -}}
 <img src="{{ $fallback.RelPermalink }}" srcset="{{ delimit $srcset ", " }}" sizes="(min-width: 50rem) 45rem, calc(100vw - 2.5rem)" width="{{ $fallback.Width }}" height="{{ $fallback.Height }}" alt="{{ $alt }}"{{ if ne .Ordinal 0 }} loading="lazy"{{ end }} decoding="async">
 {{- if .IsBlock }}{{ with .Title }}<figcaption>{{ . }}</figcaption>{{ end }}</figure>{{ end -}}
+{{- end -}}
