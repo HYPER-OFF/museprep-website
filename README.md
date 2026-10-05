@@ -75,6 +75,8 @@ Workflow übergibt den Pfad mit `--contentDir`.
 - Paket 6: alle 90 WordPress-Beiträge als `index.en.md` übertragen (ohne
   Bilder), 301-Weiterleitungen aller alten Adressen in `static/.htaccess`,
   Bericht in [`docs/MIGRATION.md`](docs/MIGRATION.md).
+- Paket 9: Entwürfe für Impressum und Datenschutzerklärung (im
+  Inhalts-Repository), Umstellungs-Checkliste in [`docs/GO-LIVE.md`](docs/GO-LIVE.md).
 
 ## Eingangsprüfung
 

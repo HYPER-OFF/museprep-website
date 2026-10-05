@@ -3,7 +3,7 @@
 {{ partial "article.html" . }}
 {{- else }}
 <div class="page-wrap">
-  {{- if in (slice "impressum" "datenschutz") .Section }}<div class="eyebrow">{{ upper (T "legal") }}</div>{{ end }}
+  {{- if in (slice "/impressum" "/datenschutz") .Path }}<div class="eyebrow">{{ upper (T "legal") }}</div>{{ end }}
   <h1>{{ .Title }}</h1>
   <div class="prose">{{ .Content }}</div>
 </div>
