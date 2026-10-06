@@ -30,6 +30,29 @@ const Theory = (() => {
   const name = n => spell(n.l, n.a);
   const pcName = p => PC_NAMES[mod(p, 12)];
   const join = notes => notes.map(name).join(' – ');
+  // Stammtonstufe ab C0 (C4 = 28): ein Schritt = eine Linie oder ein Zwischenraum weiter.
+  const step = n => n.o * 7 + n.l;
+  const fromStep = (d, a = 0) => ({ l: mod(d, 7), a, o: Math.floor(d / 7) });
+
+  // 'C4 Es4 G4' → Töne; die Ziffer am Ende ist die Oktave (C4 = eingestrichenes C, MIDI 60).
+  function notes(str) {
+    return str.trim().split(/\s+/).map(t => {
+      const m = /^([A-Za-z]+)(\d)$/.exec(t);
+      if (!m) throw new Error('Unbekannter Ton: ' + t);
+      return note(m[1], Number(m[2]));
+    });
+  }
+
+  // Ton zu einer MIDI-Nummer, geschrieben als nm (z. B. 61 + 'Des' → Des4, 60 + 'His' → His3).
+  function fromMidi(m, nm = pcName(m)) {
+    const e = TABLE[nm];
+    if (!e) throw new Error('Unbekannter Ton: ' + nm);
+    return { l: e.l, a: e.a, o: Math.round((m - NAT[e.l] - e.a) / 12) - 1 };
+  }
+
+  // Tonartnamen: Dur groß, Moll klein (D-Dur, d-Moll, fis-Moll, b-Moll).
+  const durName = n => name(n) + '-Dur';
+  const mollName = n => name(n).charAt(0).toLowerCase() + name(n).slice(1) + '-Moll';
 
   // Alle Schreibweisen eines Tons (z. B. 5 → F, Eis, Geses), höchstens maxAcc Vorzeichen.
   function spellings(p, maxAcc = 2) {
@@ -106,5 +129,5 @@ const Theory = (() => {
     return { steps, semis, name: (quality || '') + ' ' + num };
   }
 
-  return { PC_NAMES, CHORDS, note, midi, pc, name, pcName, join, spellings, transpose, stack, chord, chordMidis, identify, interval };
+  return { PC_NAMES, CHORDS, note, notes, midi, pc, name, pcName, join, step, fromStep, fromMidi, durName, mollName, spellings, transpose, stack, chord, chordMidis, identify, interval };
 })();

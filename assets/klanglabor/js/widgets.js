@@ -92,36 +92,54 @@ function Keyboard(opts = {}) {
   };
 }
 
-/* ---------- Notenzeile (Violinschlüssel) ----------
-   render(groups): jede Gruppe ist ein Akkord (Array von Tönen), nebeneinander gesetzt. */
+/* ---------- Notenzeile (Violin- oder Bassschlüssel) ----------
+   render(groups): jede Gruppe ist ein Akkord (Array von Tönen), nebeneinander gesetzt;
+   eine leere Gruppe ist ein freier Platz (mit placeholder ein Fragezeichen).
+   Optionen: labels, captions, hl (hervorgehobene Gruppe), classes (Klasse je Gruppe),
+   onTap (Gruppe antippen, z. B. zum Anhören). */
 function Staff(opts = {}) {
   const W = opts.width || 340;
   const H = 128;
-  const TOP = 36;            // F5-Linie
-  const BOTTOM = TOP + 40;   // E4-Linie
+  const TOP = 36;            // oberste Linie
+  const BOTTOM = TOP + 40;   // unterste Linie
+  const bass = opts.clef === 'bass';
+  const BASE = bass ? 18 : 30;   // Stammtonstufe der untersten Linie: G2 bzw. E4
   const el = s('svg', { viewBox: `0 0 ${W} ${H}`, class: 'staff', role: 'img', style: `max-width:${Math.round(W * 1.3)}px` });
-  const yOf = n => BOTTOM - ((n.o * 7 + n.l) - 30) * 5;
+  const yOfStep = d => BOTTOM - (d - BASE) * 5;
+  const yOf = n => yOfStep(Theory.step(n));
   const ACC = { '-2': '\u{1D12B}', '-1': '\u266D', 1: '\u266F', 2: '\u{1D12A}' };
 
   function ledger(cx, y) {
     return s('line', { x1: cx - 12, x2: cx + 12, y1: y, y2: y, class: 'st-ledger' });
   }
 
-  function render(groups, { labels = true, captions = [], hl = -1 } = {}) {
+  function render(groups, { labels = true, captions = [], hl = -1, classes = [], placeholder = false, onTap = null } = {}) {
     el.replaceChildren();
     for (let i = 0; i < 5; i++) {
       el.append(s('line', { x1: 2, x2: W - 2, y1: TOP + i * 10, y2: TOP + i * 10, class: 'st-line' }));
     }
-    el.append(s('text', { x: 6, y: BOTTOM + 10, class: 'st-clef' }, '\u{1D11E}'));
+    el.append(bass
+      ? s('text', { x: 8, y: TOP + 40, class: 'st-clef st-clef--bass' }, '\u{1D122}')
+      : s('text', { x: 6, y: BOTTOM + 10, class: 'st-clef' }, '\u{1D11E}'));
     const x0 = 66;
-    const slot = (W - x0 - 10) / groups.length;
+    const slot = (W - x0 - 10) / Math.max(1, groups.length);
     const aria = [];
     groups.forEach((g, gi) => {
       const cx = x0 + slot * gi + slot * 0.45;
-      const grp = s('g', { class: 'st-group' + (gi === hl ? ' is-hl' : '') });
-      const ds = g.map(n => n.o * 7 + n.l);
-      for (let d = 28; d >= Math.min(...ds); d -= 2) grp.append(ledger(cx, BOTTOM - (d - 30) * 5));
-      for (let d = 40; d <= Math.max(...ds); d += 2) grp.append(ledger(cx, BOTTOM - (d - 30) * 5));
+      const grp = s('g', { class: 'st-group' + (gi === hl ? ' is-hl' : '') + (classes[gi] ? ' ' + classes[gi] : '') });
+      if (onTap) {
+        grp.classList.add('is-tap');
+        grp.setAttribute('tabindex', 0);
+        grp.setAttribute('role', 'button');
+        grp.setAttribute('aria-label', (captions[gi] || Theory.join(g)) + ', anhören');
+        grp.append(s('rect', { x: cx - slot * 0.45, y: 0, width: slot, height: H, class: 'st-hit' }));
+        grp.addEventListener('click', () => onTap(gi));
+        grp.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); onTap(gi); } });
+      }
+      if (!g.length && placeholder) grp.append(s('text', { x: cx, y: TOP + 24, class: 'st-ph', 'text-anchor': 'middle' }, '?'));
+      const ds = g.map(Theory.step);
+      for (let d = BASE - 2; d >= Math.min(...ds); d -= 2) grp.append(ledger(cx, yOfStep(d)));
+      for (let d = BASE + 10; d <= Math.max(...ds); d += 2) grp.append(ledger(cx, yOfStep(d)));
       const cols = [];
       g.map(n => ({ n, y: yOf(n) })).sort((a, b) => a.y - b.y).forEach(({ n, y }) => {
         grp.append(
@@ -138,12 +156,19 @@ function Staff(opts = {}) {
       });
       if (captions[gi]) grp.append(s('text', { x: cx, y: H - 3, class: 'st-cap', 'text-anchor': 'middle' }, captions[gi]));
       el.append(grp);
-      aria.push(Theory.join(g));
+      aria.push(g.length ? Theory.join(g) : 'frei');
     });
-    el.setAttribute('aria-label', 'Noten: ' + aria.join(' | '));
+    el.setAttribute('aria-label', 'Noten' + (bass ? ' im Bassschlüssel' : '') + ': ' + aria.join(' | '));
   }
 
-  return { el, render };
+  // Stammtonstufe unter einer Bildschirmposition (für das Setzen von Noten per Antippen).
+  function stepAt(clientY) {
+    const r = el.getBoundingClientRect();
+    const y = (clientY - r.top) * (H / r.height);
+    return BASE + Math.round((BOTTOM - y) / 5);
+  }
+
+  return { el, render, stepAt, base: BASE };
 }
 
 /* ---------- Oktavkreis ----------

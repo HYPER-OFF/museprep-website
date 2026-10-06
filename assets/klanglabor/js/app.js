@@ -1,8 +1,11 @@
 'use strict';
-/* Klanglabor – Ablauf: Fortschritt, Kapitelübersicht, Lektionen, Abschluss, Blitzrunde. */
+/* Klanglabor – Ablauf: Fortschritt, Kursübersicht, Kursseiten, Lektionen, Abschluss, Blitzrunde. */
 
 (() => {
   const app = document.getElementById('app');
+  const COURSES = COURSE_ORDER.map(id => COURSE_DEFS[id]).filter(Boolean);
+  const ARCADE_TYPES = COURSES.flatMap(c => c.arcade || []);
+  const CHAPTERS = COURSES.reduce((sum, c) => sum + c.levels.length, 0);
   const reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   /* ---------- Fortschritt (nur lokal in diesem Browser) ---------- */
@@ -27,20 +30,24 @@
   const RANKS = [
     { xp: 0, name: 'Neuling' },
     { xp: 100, name: 'Zuhörer' },
-    { xp: 250, name: 'Terzenstapler' },
-    { xp: 450, name: 'Harmoniker' },
-    { xp: 700, name: 'Klangarchitekt' },
+    { xp: 250, name: 'Notenleser' },
+    { xp: 450, name: 'Terzenstapler' },
+    { xp: 700, name: 'Harmoniker' },
+    { xp: 1000, name: 'Klangarchitekt' },
+    { xp: 1500, name: 'Tonsetzer' },
+    { xp: 2200, name: 'Kapellmeister' },
+    { xp: 3000, name: 'Maestro' },
   ];
 
   const BADGES = [
     { id: 'first', glyph: '\u{1D11E}', name: 'Erster Schritt', desc: 'Dein erstes Kapitel geschafft.' },
     { id: 'perfect', glyph: '♮', name: 'Fehlerfrei', desc: 'Ein Kapitel ohne einen einzigen Fehler.' },
     { id: 'combo5', glyph: '♫', name: 'Lauf', desc: 'Fünf richtige Antworten in Folge.' },
-    { id: 'symmetry', glyph: '°7', name: 'Quadratur', desc: 'Alle zwölf Töne im Oktavkreis gefärbt.' },
-    { id: 'ear', glyph: '♬', name: 'Goldenes Ohr', desc: 'Das Hör-Kapitel ohne Fehler.' },
+    { id: 'ear', glyph: '♬', name: 'Goldenes Ohr', desc: 'Ein Hör-Kapitel ohne Fehler.' },
     { id: 'streak3', glyph: '\u{1D107}', name: 'Dranbleiber', desc: 'An drei Tagen in Folge geübt.' },
     { id: 'arcade', glyph: '\u{1D161}', name: 'Blitzmerker', desc: '200 Punkte in der Blitzrunde.' },
-    { id: 'master', glyph: '\u{1D110}', name: 'Meister der Verminderung', desc: 'Alle Kapitel abgeschlossen.' },
+    ...COURSES.flatMap(c => [c.badge, ...(c.extras || [])]),
+    { id: 'all', glyph: '\u{1D10B}', name: 'Gesamtwerk', desc: 'Alle Kurse abgeschlossen.' },
   ];
 
   function rankOf(xp) {
@@ -82,10 +89,16 @@
     return (S.streak.last === dayKey(new Date()) || S.streak.last === yesterday()) ? S.streak.count : 0;
   }
 
-  const isDone = lv => !!(S.levels[lv.id] && S.levels[lv.id].done);
-  const unlocked = i => i === 0 || isDone(LEVELS[i - 1]);
-  const arcadeUnlocked = () => isDone(LEVELS[1]);
-  const arcadeTypes = () => Arcade.TYPES.filter(t => !t.needs || (S.levels[t.needs] && S.levels[t.needs].done));
+  const doneId = id => !!(S.levels[id] && S.levels[id].done);
+  const isDone = lv => doneId(lv.id);
+  const unlocked = (c, i) => i === 0 || isDone(c.levels[i - 1]);
+  const nextIn = c => c.levels.findIndex((lv, i) => unlocked(c, i) && !isDone(lv));
+  const doneIn = c => c.levels.filter(isDone).length;
+  const courseDone = c => c.levels.every(isDone);
+  // Empfohlener Kurs: der erste im Lernweg, der noch offene Kapitel hat.
+  const recommended = () => COURSES.find(c => !courseDone(c));
+  const arcadeTypes = () => ARCADE_TYPES.filter(t => doneId(t.needs));
+  const arcadeUnlocked = () => arcadeTypes().length >= 2;
   const num = i => String(i + 1).padStart(2, '0');
   const arr = () => h('span', { class: 'arr', 'aria-hidden': 'true' }, '→');
 
@@ -154,41 +167,167 @@
         sound));
   }
 
+  /* ---------- Adressen: #kurs-id öffnet einen Kurs, ohne Anker die Übersicht ---------- */
+  function go(courseId) {
+    const hash = courseId ? '#' + courseId : '';
+    if (location.hash !== hash) history.pushState(null, '', hash || location.pathname + location.search);
+    route();
+  }
+  function route() {
+    const c = COURSES.find(x => '#' + x.id === location.hash);
+    if (c) renderCourse(c); else renderHome();
+  }
+
   function siteHeader(active) {
     const goTo = id => () => {
-      if (view !== 'home') renderHome();
+      if (view !== 'home') go('');
       const target = document.getElementById(id);
       if (target) target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth' });
     };
     const link = (id, label) => h('button', { type: 'button', class: active === id ? 'is-active' : '', onclick: goTo(id) }, label);
     return h('header', { class: 'site-header' },
-      h('button', { type: 'button', class: 'logo', 'aria-label': 'Klanglabor von MusePrep, zur Übersicht', onclick: () => renderHome() },
+      h('button', { type: 'button', class: 'logo', 'aria-label': 'Klanglabor von MusePrep, zur Übersicht', onclick: () => go('') },
         h('img', { src: app.dataset.logo, alt: '', width: 93, height: 60 }),
         h('span', { class: 'logo-sub' }, 'Klanglabor')),
       h('nav', { class: 'nav', 'aria-label': 'Bereiche' },
-        link('kapitel', 'Kapitel'), link('blitzrunde', 'Blitzrunde'), link('erfolge', 'Erfolge')));
+        link('kurse', 'Kurse'), link('blitzrunde', 'Blitzrunde'), link('erfolge', 'Erfolge')));
   }
 
-  /* ---------- Startseite ---------- */
-  function heroCircle() {
-    const fams = [0, 1, 2].map(f => [f, f + 3, f + 6, f + 9]);
-    let polys = [];
-    const c = PitchCircle({
-      sound: false,
-      onTap: p => {
-        const f = p % 3;
-        Sound.chord(fams[f].map(q => 60 + q), { arp: 0.07 });
-        polys.forEach((pg, i) => pg.classList.toggle('is-on', i === f));
-      },
-    });
-    polys = fams.map((pcs, f) => c.poly(pcs, `f${f + 1} is-line`, false));
-    for (let p = 0; p < 12; p++) c.dot(p, 'f' + (p % 3 + 1));
-    return c.el;
+  /* ---------- Startseite: alle Kurse ---------- */
+  // Kopfbild der Übersicht: vier Akkordarten aus dem Lernweg, jede antippbar.
+  function homeVisual() {
+    const chords = [
+      { notes: [n('C', 4), n('E', 4), n('G', 4)], cap: 'Dur' },
+      { notes: [n('A', 4), n('C', 5), n('E', 5)], cap: 'Moll' },
+      { notes: [n('C', 4), n('E', 4), n('Gis', 4)], cap: 'übermäßig' },
+      { notes: [n('H', 4), n('D', 5), n('F', 5), n('As', 5)], cap: 'vermindert' },
+    ];
+    const st = Staff({ width: 420 });
+    const draw = hl => st.render(chords.map(c => c.notes), { labels: false, captions: chords.map(c => c.cap), hl, onTap });
+    function onTap(i) {
+      Sound.chord(midisOf(chords[i].notes), { arp: 0.07 });
+      draw(i);
+    }
+    draw(-1);
+    return { label: 'Notenzeile · zum Anhören antippen', foot: 'Vier Klänge, ein Lernweg', el: st.el };
   }
 
-  function chapterRow(lv, i, isNext) {
+  function figure(v) {
+    return h('figure', { class: 'circle-card' },
+      h('span', { class: 'cc-label' }, v.label),
+      v.el,
+      h('figcaption', { class: 'cc-foot' }, v.foot));
+  }
+
+  function rankBlock() {
+    const r = rankOf(S.xp);
+    return h('div', { class: 'rank' },
+      h('div', { class: 'rank-head' }, h('p', { class: 'mono-label' }, 'Dein Rang'), h('p', { class: 'rank-next' }, r.next ? `noch ${r.next.xp - S.xp} XP bis ${r.next.name}` : 'Höchster Rang erreicht')),
+      h('p', { class: 'rank-name' }, r.name),
+      meter(r.pct, 'Fortschritt bis zum nächsten Rang'));
+  }
+
+  function meter(pct, label, cls = '') {
+    return h('div', { class: 'meter' + cls, role: 'progressbar', 'aria-label': label, 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round(pct * 100) },
+      h('div', { class: 'meter-fill', style: `width:${Math.round(pct * 100)}%` }));
+  }
+
+  function courseRow(c, ci, isNext) {
+    const done = doneIn(c), total = c.levels.length;
+    const status = done === total
+      ? [h('span', { class: 'mono-label' }, 'Abgeschlossen'), meter(1, `${c.short}: alle Kapitel abgeschlossen`, ' meter--row')]
+      : done
+        ? [h('span', { class: 'mono-label' }, `${done} von ${total} Kapiteln`), meter(done / total, `${c.short}: ${done} von ${total} Kapiteln`, ' meter--row')]
+        : [h('span', { class: 'mono-label' }, isNext ? 'Empfohlen →' : `${total} Kapitel`)];
+    const b = h('button', {
+      type: 'button',
+      class: 'chapter' + (isNext ? ' is-next' : ''),
+      'aria-label': `Kurs ${ci + 1}: ${c.short}`,
+    },
+    h('span', { class: 'ch-num', 'aria-hidden': 'true' }, num(ci)),
+    h('span', { class: 'ch-text' }, h('span', { class: 'ch-title' }, c.short), h('span', { class: 'ch-sub' }, c.sub)),
+    h('span', { class: 'ch-status' }, status));
+    b.addEventListener('click', () => go(c.id));
+    return h('li', {}, b);
+  }
+
+  function arcadeBand() {
+    const open = arcadeUnlocked();
+    return h('section', { class: 'band', id: 'blitzrunde' },
+      h('div', { class: 'band-glyph', 'aria-hidden': 'true' }, '♫'),
+      h('h2', {}, 'Blitzrunde'),
+      h('p', {}, open
+        ? `60 Sekunden, so viele Treffer wie möglich, mit Fragen aus allen Kapiteln, die du geschafft hast. Serien bringen bis zu ×4. Dein Rekord: ${S.arcadeBest} Punkte.`
+        : 'Sechzig Sekunden, so viele Treffer wie möglich. Die Blitzrunde öffnet sich, sobald du die ersten zwei Kapitel eines Kurses geschafft hast.'),
+      open
+        ? h('button', { type: 'button', class: 'btn btn--gold', onclick: renderArcadeIntro }, 'Blitzrunde starten', arr())
+        : h('p', { class: 'mono-label' }, 'Nach zwei Kapiteln'));
+  }
+
+  function siteFooter() {
+    return h('footer', { class: 'site-footer' },
+      h('div', { class: 'footer-block' },
+        h('p', { class: 'mono-label' }, 'Dein Fortschritt'),
+        h('p', {}, 'Wird nur in diesem Browser gespeichert.'),
+        h('button', {
+          type: 'button', class: 'link-btn',
+          onclick: () => dialog({
+            title: 'Fortschritt zurücksetzen?',
+            text: 'XP, Sterne, Erfolge, Tagesserie und Rekord aller Kurse werden gelöscht. Das lässt sich nicht rückgängig machen.',
+            ok: 'Zurücksetzen', cancel: 'Behalten',
+            onOk: () => { const snd = S.sound; S = fresh(); S.sound = snd; save(); go(''); },
+          }),
+        }, 'Fortschritt zurücksetzen')),
+      h('nav', { class: 'footer-legal', 'aria-label': 'Rechtliches' },
+        h('a', { href: app.dataset.impressum }, 'Impressum'),
+        h('a', { href: app.dataset.datenschutz }, 'Datenschutzerklärung')),
+      h('p', { class: 'copyright' }, 'Klanglabor · ein Übungsraum von MusePrep'));
+  }
+
+  function renderHome() {
+    const rec = recommended();
+    const started = COURSES.some(doneIn);
+
+    const cta = rec
+      ? h('button', { type: 'button', class: 'btn btn--primary', onclick: () => go(rec.id) },
+        started ? `Weiter mit ${rec.short}` : 'Mit Kurs 1 beginnen', arr())
+      : h('button', { type: 'button', class: 'btn btn--primary', onclick: renderArcadeIntro }, 'Blitzrunde spielen', arr());
+    const second = arcadeUnlocked() && rec
+      ? h('button', { type: 'button', class: 'btn btn--outline', onclick: renderArcadeIntro }, 'Blitzrunde', arr())
+      : null;
+
+    const hero = h('section', { class: 'hero' },
+      h('div', { class: 'staff-lines', 'aria-hidden': 'true' }),
+      h('div', { class: 'hero-clef', 'aria-hidden': 'true' }, '\u{1D11E}'),
+      h('div', { class: 'hero-copy' },
+        h('p', { class: 'eyebrow' }, `Klanglabor · ${COURSES.length} Kurse · ${CHAPTERS} Kapitel`),
+        h('h1', {}, 'Musiktheorie zum ', h('em', {}, 'Mitspielen')),
+        h('div', { class: 'hero-lead' }, h('p', {}, 'Ein Lernweg in sieben Kursen: vom Notenlesen über Dur, Moll und Umkehrungen bis zu übermäßigen und verminderten Akkorden und zum Melodiediktat. Du baust, hörst und spielst alles selbst.')),
+        h('div', { class: 'actions' }, cta, second),
+        rankBlock()),
+      figure(homeVisual()));
+
+    const list = h('section', { class: 'paths', id: 'kurse' },
+      h('div', { class: 'section-head' }, h('h2', {}, 'Die Kurse'), h('span', { class: 'mono-label' }, 'In dieser Reihenfolge aufeinander aufgebaut')),
+      h('ol', { class: 'chapters' }, COURSES.map((c, ci) => courseRow(c, ci, c === rec))));
+
+    const badges = h('section', { class: 'paths', id: 'erfolge' },
+      h('div', { class: 'section-head' }, h('h2', {}, 'Erfolge'), h('span', { class: 'mono-label' }, `${S.badges.filter(id => BADGES.some(b => b.id === id)).length} von ${BADGES.length}`)),
+      h('div', { class: 'cards' }, BADGES.map(b => {
+        const on = S.badges.includes(b.id);
+        return h('div', { class: 'card badge' + (on ? '' : ' is-locked') },
+          h('span', { class: 'card-top' }, h('span', { class: 'badge-glyph', 'aria-hidden': 'true' }, b.glyph), h('span', { class: 'mono-label' }, on ? 'Erreicht' : 'Offen')),
+          h('h3', {}, b.name),
+          h('p', {}, b.desc));
+      })));
+
+    mount('home', statusBar(), siteHeader('kurse'), h('main', { id: 'main' }, hero, list, arcadeBand(), badges), siteFooter());
+  }
+
+  /* ---------- Kursseite ---------- */
+  function chapterRow(c, lv, i, isNext) {
     const st = S.levels[lv.id];
-    const open = unlocked(i);
+    const open = unlocked(c, i);
     const status = st && st.done
       ? [starRow(st.stars), h('span', { class: 'mono-label' }, 'Abgeschlossen')]
       : isNext ? [h('span', { class: 'mono-label' }, 'Als Nächstes →')]
@@ -202,85 +341,55 @@
     h('span', { class: 'ch-num', 'aria-hidden': 'true' }, num(i)),
     h('span', { class: 'ch-text' }, h('span', { class: 'ch-title' }, lv.title), h('span', { class: 'ch-sub' }, lv.sub)),
     h('span', { class: 'ch-status' }, status));
-    b.addEventListener('click', () => startLevel(i));
+    b.addEventListener('click', () => startLevel(c, i));
     return h('li', {}, b);
   }
 
-  function renderHome() {
-    const next = LEVELS.findIndex((lv, i) => unlocked(i) && !isDone(lv));
-    const doneCount = LEVELS.filter(isDone).length;
-    const r = rankOf(S.xp);
+  function renderCourse(c) {
+    const ci = COURSES.indexOf(c);
+    const next = nextIn(c);
+    const done = doneIn(c), total = c.levels.length;
+    const after = COURSES[ci + 1];
+    const before = COURSES[ci - 1];
 
     const cta = next >= 0
-      ? h('button', { type: 'button', class: 'btn btn--primary', onclick: () => startLevel(next) },
-        doneCount ? `Weiter mit Kapitel ${next + 1}` : 'Mit Kapitel 1 beginnen', arr())
-      : h('button', { type: 'button', class: 'btn btn--primary', onclick: renderArcadeIntro }, 'Blitzrunde spielen', arr());
-    const second = arcadeUnlocked() && next >= 0
-      ? h('button', { type: 'button', class: 'btn btn--outline', onclick: renderArcadeIntro }, 'Blitzrunde', arr())
+      ? h('button', { type: 'button', class: 'btn btn--primary', onclick: () => startLevel(c, next) },
+        done ? `Weiter mit Kapitel ${next + 1}` : 'Mit Kapitel 1 beginnen', arr())
+      : after
+        ? h('button', { type: 'button', class: 'btn btn--primary', onclick: () => go(after.id) }, `Weiter mit Kurs ${ci + 2}`, arr())
+        : h('button', { type: 'button', class: 'btn btn--primary', onclick: renderArcadeIntro }, 'Blitzrunde spielen', arr());
+    // Wer mitten im Lernweg einsteigt, bekommt den vorigen Kurs als Grundlage empfohlen.
+    const tip = before && !done && !courseDone(before)
+      ? h('p', { class: 'course-tip' }, `Grundlage dafür: Kurs ${num(ci - 1)} · `,
+        h('button', { type: 'button', class: 'link-btn', onclick: () => go(before.id) }, before.short))
       : null;
 
     const hero = h('section', { class: 'hero' },
       h('div', { class: 'staff-lines', 'aria-hidden': 'true' }),
       h('div', { class: 'hero-clef', 'aria-hidden': 'true' }, '\u{1D11E}'),
       h('div', { class: 'hero-copy' },
-        h('p', { class: 'eyebrow' }, `Kurs · ${LEVELS.length} Kapitel · Harmonielehre`),
-        h('h1', {}, 'Der verminderte ', h('em', {}, 'Septakkord')),
-        h('div', { class: 'hero-lead' }, h('p', {}, 'Vier Töne, drei kleine Terzen, ein perfektes Quadrat. Du baust den Akkord selbst, hörst ihn, löst ihn auf und deutest ihn um.')),
-        h('div', { class: 'actions' }, cta, second),
+        h('p', { class: 'eyebrow' }, `Kurs ${num(ci)} · ${total} Kapitel · ${c.topic}`),
+        h('h1', {}, c.title[0], h('em', {}, c.title[1])),
+        h('div', { class: 'hero-lead' }, h('p', {}, c.lead)),
+        h('div', { class: 'actions' }, cta, h('button', { type: 'button', class: 'btn btn--outline', onclick: () => go('') }, 'Alle Kurse', arr())),
+        tip,
         h('div', { class: 'rank' },
-          h('div', { class: 'rank-head' }, h('p', { class: 'mono-label' }, 'Dein Rang'), h('p', { class: 'rank-next' }, r.next ? `noch ${r.next.xp - S.xp} XP bis ${r.next.name}` : 'Höchster Rang erreicht')),
-          h('p', { class: 'rank-name' }, r.name),
-          h('div', { class: 'meter', role: 'progressbar', 'aria-label': 'Fortschritt bis zum nächsten Rang', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round(r.pct * 100) },
-            h('div', { class: 'meter-fill', style: `width:${Math.round(r.pct * 100)}%` })))),
-      h('figure', { class: 'circle-card' },
-        h('span', { class: 'cc-label' }, 'Oktavkreis · zum Anhören antippen'),
-        heroCircle(),
-        h('figcaption', { class: 'cc-foot' }, 'Drei Akkorde decken alle zwölf Töne ab')));
+          h('div', { class: 'rank-head' }, h('p', { class: 'mono-label' }, 'Kursfortschritt'), h('p', { class: 'rank-next' }, done === total ? 'Kurs abgeschlossen' : `noch ${total - done} Kapitel`)),
+          h('p', { class: 'rank-name' }, `${done} von ${total} Kapiteln`),
+          meter(done / total, 'Fortschritt im Kurs'))),
+      figure(c.visual()));
 
     const chapters = h('section', { class: 'paths', id: 'kapitel' },
       h('div', { class: 'section-head' }, h('h2', {}, 'Die Kapitel'), h('span', { class: 'glyphs', 'aria-hidden': 'true' }, '♭ ♮ ♯')),
-      h('ol', { class: 'chapters' }, LEVELS.map((lv, i) => chapterRow(lv, i, i === next))));
+      h('ol', { class: 'chapters' }, c.levels.map((lv, i) => chapterRow(c, lv, i, i === next))));
 
-    const open = arcadeUnlocked();
-    const band = h('section', { class: 'band', id: 'blitzrunde' },
-      h('div', { class: 'band-glyph', 'aria-hidden': 'true' }, '♫'),
-      h('h2', {}, 'Blitzrunde'),
-      h('p', {}, open
-        ? `60 Sekunden, so viele Treffer wie möglich. Serien bringen bis zu ×4. Dein Rekord: ${S.arcadeBest} Punkte.`
-        : 'Sechzig Sekunden, so viele Treffer wie möglich. Die Blitzrunde öffnet sich nach Kapitel 2.'),
-      open
-        ? h('button', { type: 'button', class: 'btn btn--gold', onclick: renderArcadeIntro }, 'Blitzrunde starten', arr())
-        : h('p', { class: 'mono-label' }, 'Ab Kapitel 2'));
+    const pager = h('nav', { class: 'pager', 'aria-label': 'Weitere Kurse' },
+      before ? h('button', { type: 'button', class: 'pager-link', onclick: () => go(before.id) },
+        h('span', { class: 'mono-label' }, `← Kurs ${num(ci - 1)}`), h('span', { class: 'pager-title' }, before.short)) : h('span', {}),
+      after ? h('button', { type: 'button', class: 'pager-link is-next', onclick: () => go(after.id) },
+        h('span', { class: 'mono-label' }, `Kurs ${num(ci + 1)} →`), h('span', { class: 'pager-title' }, after.short)) : null);
 
-    const badges = h('section', { class: 'paths', id: 'erfolge' },
-      h('div', { class: 'section-head' }, h('h2', {}, 'Erfolge'), h('span', { class: 'mono-label' }, `${S.badges.length} von ${BADGES.length}`)),
-      h('div', { class: 'cards' }, BADGES.map(b => {
-        const on = S.badges.includes(b.id);
-        return h('div', { class: 'card badge' + (on ? '' : ' is-locked') },
-          h('span', { class: 'card-top' }, h('span', { class: 'badge-glyph', 'aria-hidden': 'true' }, b.glyph), h('span', { class: 'mono-label' }, on ? 'Erreicht' : 'Offen')),
-          h('h3', {}, b.name),
-          h('p', {}, b.desc));
-      })));
-
-    const footer = h('footer', { class: 'site-footer' },
-      h('div', { class: 'footer-block' },
-        h('p', { class: 'mono-label' }, 'Dein Fortschritt'),
-        h('p', {}, 'Wird nur in diesem Browser gespeichert.'),
-        h('button', {
-          type: 'button', class: 'link-btn',
-          onclick: () => dialog({
-            title: 'Fortschritt zurücksetzen?',
-            text: 'XP, Sterne, Erfolge, Tagesserie und Rekord werden gelöscht. Das lässt sich nicht rückgängig machen.',
-            ok: 'Zurücksetzen', cancel: 'Behalten',
-            onOk: () => { const snd = S.sound; S = fresh(); S.sound = snd; save(); renderHome(); },
-          }),
-        }, 'Fortschritt zurücksetzen')),
-      h('nav', { class: 'footer-legal', 'aria-label': 'Rechtliches' },
-        h('a', { href: app.dataset.impressum }, 'Impressum'),
-        h('a', { href: app.dataset.datenschutz }, 'Datenschutzerklärung')),
-      h('p', { class: 'copyright' }, 'Klanglabor · ein Übungsraum von MusePrep'));
-
-    mount('home', statusBar(), siteHeader('kapitel'), h('main', { id: 'main' }, hero, chapters, band, badges), footer);
+    mount('course', statusBar(), siteHeader('kurse'), h('main', { id: 'main' }, hero, chapters, pager, arcadeBand()), siteFooter());
   }
 
   /* ---------- Lektion ---------- */
@@ -288,19 +397,20 @@
   const PRAISE = ['Richtig.', 'Genau so.', 'Sehr gut.', 'Stimmt.', 'Sauber gelöst.'];
   const multiplier = c => (c >= 5 ? 3 : c >= 3 ? 2 : 1);
 
-  function startLevel(i) {
-    if (!unlocked(i)) return;
-    const level = LEVELS[i];
-    L = { index: i, level, steps: level.steps(), at: 0, mistakes: 0, xp: 0, combo: 0, bestCombo: 0, asked: 0, firstTry: 0, ctx: null, ui: null };
+  function startLevel(c, i) {
+    if (!unlocked(c, i)) return;
+    const level = c.levels[i];
+    L = { course: c, index: i, level, steps: level.steps(), at: 0, mistakes: 0, xp: 0, combo: 0, bestCombo: 0, asked: 0, firstTry: 0, ctx: null, ui: null };
     renderLesson();
   }
 
   function leaveLesson() {
-    if (L.at === 0 && L.ctx.state === 'idle') return renderHome();
+    const c = L.course;
+    if (L.at === 0 && L.ctx.state === 'idle') return renderCourse(c);
     dialog({
       title: 'Kapitel verlassen?',
       text: 'Deine gesammelten XP bleiben. Das Kapitel beginnt beim nächsten Mal von vorn.',
-      ok: 'Verlassen', cancel: 'Weiterlernen', onOk: renderHome,
+      ok: 'Verlassen', cancel: 'Weiterlernen', onOk: () => renderCourse(c),
     });
   }
 
@@ -332,7 +442,7 @@
       statusBar(),
       h('header', { class: 'lesson-head' },
         h('div', { class: 'lh-row' },
-          h('p', { class: 'crumbs' }, h('span', {}, 'Klanglabor'), h('span', { 'aria-hidden': 'true' }, '/'), h('span', {}, `Kapitel ${num(L.index)} · ${L.level.title}`)),
+          h('p', { class: 'crumbs' }, h('span', {}, L.course.short), h('span', { 'aria-hidden': 'true' }, '/'), h('span', {}, `Kapitel ${num(L.index)} · ${L.level.title}`)),
           h('button', { type: 'button', class: 'link-btn', onclick: leaveLesson }, 'Kapitel verlassen')),
         h('div', { class: 'lh-row' }, h('div', { class: 'prog' }, progArt, count), combo)),
       h('main', { id: 'main', class: 'stage' }, card, actions));
@@ -497,27 +607,33 @@
     touchStreak();
     award('first');
     if (stars === 3) award('perfect');
-    if (lv.id === 'hoeren' && L.mistakes === 0) award('ear');
-    if (LEVELS.every(isDone)) award('master');
+    if (lv.ear && L.mistakes === 0) award('ear');
+    if (courseDone(L.course)) award(L.course.badge.id);
+    if (COURSES.every(courseDone)) award('all');
     renderDone(stars);
   }
 
   function renderDone(stars) {
     const i = L.index;
-    const nextLv = LEVELS[i + 1];
+    const c = L.course;
+    const nextLv = c.levels[i + 1];
+    const after = COURSES[COURSES.indexOf(c) + 1];
     const acc = L.asked ? Math.round((L.firstTry / L.asked) * 100) : 100;
     const stat = (label, value) => h('div', { class: 'ds' }, h('dt', {}, label), h('dd', {}, value));
     const primaryBtn = nextLv
-      ? h('button', { type: 'button', class: 'btn btn--primary', onclick: () => startLevel(i + 1) }, `Weiter mit Kapitel ${i + 2}`, arr())
-      : h('button', { type: 'button', class: 'btn btn--primary', onclick: renderArcadeIntro }, 'Zur Blitzrunde', arr());
+      ? h('button', { type: 'button', class: 'btn btn--primary', onclick: () => startLevel(c, i + 1) }, `Weiter mit Kapitel ${i + 2}`, arr())
+      : after
+        ? h('button', { type: 'button', class: 'btn btn--primary', onclick: () => go(after.id) }, `Weiter mit Kurs: ${after.short}`, arr())
+        : h('button', { type: 'button', class: 'btn btn--primary', onclick: renderArcadeIntro }, 'Zur Blitzrunde', arr());
 
-    mount('done', statusBar(), siteHeader('kapitel'), h('main', { id: 'main', class: 'done' },
+    mount('done', statusBar(), siteHeader('kurse'), h('main', { id: 'main', class: 'done' },
       h('div', { class: 'done-head' },
-        h('p', { class: 'crumbs' }, h('span', {}, `Kapitel ${num(i)}`), h('span', { 'aria-hidden': 'true' }, '/'), h('span', {}, 'abgeschlossen')),
+        h('p', { class: 'crumbs' }, h('span', {}, c.short), h('span', { 'aria-hidden': 'true' }, '/'), h('span', {}, `Kapitel ${num(i)} abgeschlossen`)),
         h('h1', {}, L.level.title),
         h('div', { class: 'done-rating' },
           starRow(stars, 'big-stars', 'big-star'),
-          h('p', { class: 'done-sub' }, stars === 3 ? 'Ohne einen einzigen Fehler.' : stars === 2 ? 'Fast fehlerfrei. Für drei Sterne: Kapitel wiederholen.' : 'Geschafft. Mit einer Wiederholung holst du mehr Sterne.'))),
+          h('p', { class: 'done-sub' }, stars === 3 ? 'Ohne einen einzigen Fehler.' : stars === 2 ? 'Fast fehlerfrei. Für drei Sterne: Kapitel wiederholen.' : 'Geschafft. Mit einer Wiederholung holst du mehr Sterne.')),
+        nextLv ? null : h('p', { class: 'course-done' }, `Damit hast du den Kurs ${c.short} abgeschlossen.`)),
       h('dl', { class: 'done-stats' },
         stat('XP gesammelt', `+${L.xp}`),
         stat('Auf Anhieb richtig', `${acc} %`),
@@ -527,8 +643,8 @@
         h('p', { html: inline(L.level.takeaway) })),
       h('div', { class: 'actions' },
         primaryBtn,
-        h('button', { type: 'button', class: 'btn btn--outline', onclick: () => startLevel(i) }, 'Kapitel wiederholen'),
-        h('button', { type: 'button', class: 'link-btn', onclick: renderHome }, 'Zur Übersicht'))));
+        h('button', { type: 'button', class: 'btn btn--outline', onclick: () => startLevel(c, i) }, 'Kapitel wiederholen'),
+        h('button', { type: 'button', class: 'link-btn', onclick: () => renderCourse(c) }, 'Zur Kursübersicht'))));
     Sound.sfx.fanfare();
     confetti();
   }
@@ -548,14 +664,13 @@
         h('li', {}, h('b', {}, '+10 Punkte'), ' pro Treffer, Serien bringen bis zu ×4'),
         h('li', {}, h('b', {}, '−3 Sekunden'), ' für jeden Fehler'),
         h('li', {}, 'Antworten mit ', h('kbd', {}, 'A'), '–', h('kbd', {}, 'D'), ' oder ', h('kbd', {}, '1'), '–', h('kbd', {}, '4'))),
-      h('div', { class: 'types' }, Arcade.TYPES.map(t => {
-        const on = types.includes(t);
-        return h('span', { class: 'chip' + (on ? ' is-on' : '') }, on ? t.name : `${t.name} · gesperrt`);
-      })),
+      h('div', { class: 'types' },
+        types.map(t => h('span', { class: 'chip is-on' }, t.name)),
+        types.length < ARCADE_TYPES.length ? h('span', { class: 'chip' }, `${ARCADE_TYPES.length - types.length} weitere nach neuen Kapiteln`) : null),
       h('p', { class: 'record' }, 'Dein Rekord', h('b', {}, S.arcadeBest)),
       h('div', { class: 'actions' },
         h('button', { type: 'button', class: 'btn btn--gold', onclick: runArcade }, 'Start', arr()),
-        h('button', { type: 'button', class: 'link-btn', onclick: renderHome }, 'Zur Übersicht'))));
+        h('button', { type: 'button', class: 'link-btn', onclick: () => go('') }, 'Zur Übersicht'))));
   }
 
   function runArcade() {
@@ -580,15 +695,18 @@
 
     function nextQ() {
       if (G.over) return;
-      let q;
-      do { q = pick(pool)(); } while (G.q && q.prompt === G.q.prompt && !q.play);
+      // Nicht zweimal hintereinander dieselbe Frage.
+      const sig = x => x.key || x.prompt + (x.play ? String(x.play) : '');
+      let q, tries = 0;
+      do { q = pick(pool)(); } while (G.q && sig(q) === sig(G.q) && ++tries < 12);
       G.q = q;
       G.lock = false;
       tag.textContent = q.tag;
       prompt.innerHTML = inline(q.prompt);
       media.replaceChildren();
+      if (q.media) q.media(media);
       if (q.play) {
-        const play = () => Sound.chord(q.play);
+        const play = typeof q.play === 'function' ? q.play : () => Sound.chord(q.play);
         media.append(PlayBtn('Nochmal hören', play));
         play();
       }
@@ -669,7 +787,7 @@
         stat('XP gesammelt', `+${xp}`)),
       h('div', { class: 'actions' },
         h('button', { type: 'button', class: 'btn btn--gold', onclick: runArcade }, 'Nochmal', arr()),
-        h('button', { type: 'button', class: 'link-btn', onclick: renderHome }, 'Zur Übersicht'))));
+        h('button', { type: 'button', class: 'link-btn', onclick: () => go('') }, 'Zur Übersicht'))));
     Sound.sfx.fanfare();
     if (record && G.score > 0) confetti();
   }
@@ -733,5 +851,6 @@
     }
   });
 
-  renderHome();
+  window.addEventListener('popstate', route);
+  route();
 })();

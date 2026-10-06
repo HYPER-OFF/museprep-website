@@ -74,6 +74,27 @@ const Sound = (() => {
     midis.forEach((m, i) => piano(m, when + i * arp, dur, vel));
   }
 
+  // Töne nacheinander, z. B. eine Melodie; step = Abstand in Sekunden.
+  function seq(midis, { when = 0, step = 0.55, dur = 1.1, vel = 0.3 } = {}) {
+    midis.forEach((m, i) => piano(m, when + i * step, dur, vel));
+  }
+
+  // Rhythmus: items = [[midi oder null für eine Pause, Schläge], …], bpm = Viertel pro Minute.
+  function rhythm(items, { when = 0, bpm = 96, vel = 0.3 } = {}) {
+    const beat = 60 / bpm;
+    let t = when;
+    for (const [m, beats] of items) {
+      if (m != null) piano(m, t, Math.max(0.25, beats * beat * 0.92), vel);
+      t += beats * beat;
+    }
+    return t - when;
+  }
+
+  // Metronom-Klick, betont auf der Eins.
+  function click(when = 0, accent = false) {
+    bell(accent ? 1760 : 1320, when, 0.06, accent ? 0.12 : 0.07, 'square');
+  }
+
   function bell(freq, when, dur, vel, type = 'sine') {
     const c = ensure();
     if (!c) return;
@@ -114,7 +135,7 @@ const Sound = (() => {
   };
 
   return {
-    piano, chord, sfx,
+    piano, chord, seq, rhythm, click, sfx,
     unlock: ensure,
     get enabled() { return enabled; },
     setEnabled(v) { enabled = !!v; if (!enabled && ctx) ctx.suspend(); if (enabled && ctx) ctx.resume(); },

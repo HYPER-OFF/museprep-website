@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Klanglabor · {{ site.Title }}</title>
-<meta name="description" content="Interaktive Kapitel zum verminderten Septakkord: bauen, hören, auflösen, umdeuten.">
+<meta name="description" content="Interaktive Kurse zur Musiktheorie: Notenlesen, Dur- und Moll-Akkorde, Umkehrungen, übermäßige und verminderte Akkorde, Melodiediktate.">
 <meta name="theme-color" content="#191970">
 {{- with .OutputFormats.Get "klanglabor" }}
 <link rel="canonical" href="{{ .Permalink }}">
@@ -14,7 +14,10 @@
 {{- with resources.Get "images/icon.png" }}
 <link rel="icon" type="image/png" sizes="32x32" href="{{ (.Process "resize 32x32 png").RelPermalink }}">
 {{- end }}
-{{- $css := resources.Get "klanglabor/style.css" | resources.Copy "quiz/klanglabor.css" | minify | fingerprint }}
+{{- /* Grundstile, danach die Stile einzelner Kurse (kurse/*.css), falls vorhanden. */}}
+{{- $styles := slice (resources.Get "klanglabor/style.css") }}
+{{- with resources.Match "klanglabor/kurse/*.css" }}{{ $styles = $styles | append . }}{{ end }}
+{{- $css := $styles | resources.Concat "quiz/klanglabor.css" | minify | fingerprint }}
 <link rel="stylesheet" href="{{ $css.RelPermalink }}" integrity="{{ $css.Data.Integrity }}">
 </head>
 <body>
@@ -25,10 +28,13 @@
   data-impressum="{{ with $impressum }}{{ .RelPermalink }}{{ end }}"
   data-datenschutz="{{ with $datenschutz }}{{ .RelPermalink }}{{ end }}"></div>
 <noscript><p class="noscript">Das Klanglabor braucht JavaScript. <a href="{{ .RelPermalink }}">Zurück zur Quiz-Übersicht</a></p></noscript>
+{{- /* Reihenfolge: Grundbausteine, Kursgerüst, alle Kurse (kurse/*.js), zuletzt der Ablauf. */}}
 {{- $files := slice }}
-{{- range slice "util" "theory" "audio" "widgets" "lessons" "arcade" "app" }}
+{{- range slice "util" "theory" "audio" "widgets" "steps" }}
   {{- $files = $files | append (resources.Get (printf "klanglabor/js/%s.js" .)) }}
 {{- end }}
+{{- $files = $files | append (resources.Match "klanglabor/kurse/*.js") }}
+{{- $files = $files | append (resources.Get "klanglabor/js/app.js") }}
 {{- $js := $files | resources.Concat "quiz/klanglabor.js" | minify | fingerprint }}
 <script src="{{ $js.RelPermalink }}" integrity="{{ $js.Data.Integrity }}" defer></script>
 </body>

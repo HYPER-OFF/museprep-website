@@ -1,0 +1,28 @@
+/* Kurs Notenlesen: Notenwerte, Takt, Notenzeilen nebeneinander. */
+.noten-glyph { font: 44px/1.15 var(--music); color: var(--ink); }
+.noten-values { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr)); gap: 0 24px; width: 100%; border-top: 1px solid var(--ink); }
+.noten-value { display: grid; gap: 6px; justify-items: start; align-content: start; padding: 16px 0 20px; border-bottom: 1px solid var(--line-soft); }
+.noten-vname { font: 500 20px/1.2 var(--serif); }
+.noten-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 18px;
+  width: 100%;
+  max-width: 520px;
+  min-height: 88px;
+  padding: 10px 22px;
+  border-left: 2px solid var(--ink);
+  border-right: 2px solid var(--ink);
+  background: linear-gradient(transparent calc(50% - .5px), var(--line) calc(50% - .5px) calc(50% + .5px), transparent calc(50% + .5px));
+}
+.noten-bar .noten-glyph { font-size: 50px; }
+.noten-vbtns { display: flex; flex-wrap: wrap; gap: 8px; }
+.noten-vbtn { padding: 8px 14px; gap: 10px; }
+.noten-vbtn .noten-glyph { font-size: 30px; line-height: 1; color: inherit; }
+.noten-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 12px 32px; width: 100%; max-width: 560px; }
+.noten-trio { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: 12px 24px; width: 100%; }
+.noten-trio figure { margin: 0; display: grid; gap: 4px; min-width: 0; }
+.noten-trio figcaption { font: 500 12px var(--mono); letter-spacing: .1em; color: var(--gold-dark); text-transform: uppercase; }
+/* Rhythmus-Hörfragen: Antworten als Notenglyphen */
+.noten-rq .opt-t { font: 30px/1.2 var(--music); letter-spacing: .12em; }

@@ -54,7 +54,7 @@ Workflow übergibt den Pfad mit `--contentDir`.
 | `layouts/_shortcodes/` | sperrt Hugos eingebaute Shortcodes |
 | `assets/css/main.css` | natives CSS nach dem Claude-Design |
 | `assets/images/` | Logo und Icon, werden beim Build neu kodiert |
-| `assets/klanglabor/` | Klanglabor-App (JavaScript, CSS), wird gebündelt und mit Prüfsumme ausgeliefert |
+| `assets/klanglabor/` | Klanglabor-App (JavaScript, CSS, Kurse in `kurse/`), wird gebündelt und mit Prüfsumme ausgeliefert |
 | `i18n/` | Oberflächentexte Deutsch/Englisch |
 | `static/fonts/` | Schriften als WOFF2 mit Lizenzen |
 | `scripts/` | Hugo-Installation, lokaler Build, Prüfskripte, Bericht |
@@ -146,6 +146,17 @@ properties of null“).
   `assets/klanglabor/` und werden nur hier gepflegt. Anpassungen gegenüber der
   Ausgangsfassung: `style` per CSSOM statt Attribut (CSP), Logo und Links per
   `data-`Attribut, Rückweg zur Quiz-Übersicht, Impressum und Datenschutz im Footer.
+- **Kurse im Klanglabor:** sieben Kurse in fester Reihenfolge (Lernweg, in
+  `COURSE_ORDER` in `assets/klanglabor/js/steps.js`): Notenlesen, Dur-Akkorde,
+  Moll-Akkorde, Umkehrungen, übermäßige Akkorde, verminderter Septakkord,
+  Melodie-Diktate. Jeder Kurs ist eine Datei in `assets/klanglabor/kurse/`
+  (optional mit eigener `.css`), die sich mit `defineCourse` anmeldet; die
+  Vorlage bindet alle Dateien dort automatisch ein. `steps.js` enthält die
+  Schritt-Typen (Erklärung, Auswahlfrage, Klaviatur, Note setzen, Melodiediktat,
+  Experiment) und gemeinsame Experimente. Jeder Kurs ist über
+  `/quiz/klanglabor.html#<kurs-id>` direkt erreichbar. Kapitel-ids sind
+  kursübergreifend eindeutig, weil der Fortschritt im Browser unter ihnen
+  gespeichert wird.
 - **Eigene Quizze** pflegen Autoren in Pages CMS („Quiz (Deutsch)“, „Quiz
   (Englisch)“). Eine Quiz-Seite darf zusätzlich zu den vier Feldern genau das
   Feld `fragen` haben: 1–50 Fragen mit `frage`, 2–6 `antworten`, `richtig`

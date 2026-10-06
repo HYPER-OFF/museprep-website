@@ -1,0 +1,3 @@
+/* Kurs Umkehrungen: die drei Stellungsnamen passen auf schmalen Bildschirmen nicht in eine Zeile. */
+.umk-seg { display: flex; flex-wrap: wrap; width: fit-content; max-width: 100%; }
+.umk-seg button { flex: 1 1 auto; }
