@@ -302,7 +302,7 @@
       h('div', { class: 'hero-copy' },
         h('p', { class: 'eyebrow' }, `Klanglabor · ${COURSES.length} Kurse · ${CHAPTERS} Kapitel`),
         h('h1', {}, 'Musiktheorie zum ', h('em', {}, 'Mitspielen')),
-        h('div', { class: 'hero-lead' }, h('p', {}, 'Ein Lernweg in sieben Kursen: vom Notenlesen über Dur, Moll und Umkehrungen bis zu übermäßigen und verminderten Akkorden und zum Melodiediktat. Du baust, hörst und spielst alles selbst.')),
+        h('div', { class: 'hero-lead' }, h('p', {}, 'Ein Lernweg in acht Kursen: vom Notensystem und Notenlesen über Dur, Moll und Umkehrungen bis zu übermäßigen und verminderten Akkorden und zum Melodiediktat. Du baust, hörst und spielst alles selbst.')),
         h('div', { class: 'actions' }, cta, second),
         rankBlock()),
       figure(homeVisual()));

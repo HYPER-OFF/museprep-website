@@ -146,8 +146,9 @@ properties of null“).
   `assets/klanglabor/` und werden nur hier gepflegt. Anpassungen gegenüber der
   Ausgangsfassung: `style` per CSSOM statt Attribut (CSP), Logo und Links per
   `data-`Attribut, Rückweg zur Quiz-Übersicht, Impressum und Datenschutz im Footer.
-- **Kurse im Klanglabor:** sieben Kurse in fester Reihenfolge (Lernweg, in
-  `COURSE_ORDER` in `assets/klanglabor/js/steps.js`): Notenlesen, Dur-Akkorde,
+- **Kurse im Klanglabor:** acht Kurse in fester Reihenfolge (Lernweg, in
+  `COURSE_ORDER` in `assets/klanglabor/js/steps.js`): Das Notensystem (nach den
+  Skripten „Das Notensystem“ #1–#7, inhaltlich nur deren Stoff), Notenlesen, Dur-Akkorde,
   Moll-Akkorde, Umkehrungen, übermäßige Akkorde, verminderter Septakkord,
   Melodie-Diktate. Jeder Kurs ist eine Datei in `assets/klanglabor/kurse/`
   (optional mit eigener `.css`), die sich mit `defineCourse` anmeldet; die

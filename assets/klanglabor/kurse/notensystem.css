@@ -1,0 +1,6 @@
+/* Kurs Das Notensystem: zwei Schlüssel nebeneinander, Knopfreihen, Auflösungszeichen. */
+.ns-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr)); gap: 8px 24px; width: 100%; max-width: 520px; }
+.ns-pair figure { margin: 0; display: grid; gap: 4px; min-width: 0; }
+.ns-pair figcaption { font: 500 12px var(--mono); letter-spacing: .1em; color: var(--gold-dark); text-transform: uppercase; }
+.ns-order { display: flex; flex-wrap: wrap; gap: 8px; }
+.ns-glyph { font: 88px/1 var(--music); color: var(--ink); }

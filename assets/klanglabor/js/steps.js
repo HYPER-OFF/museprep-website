@@ -18,7 +18,7 @@ const CH = T.CHORDS;
      levels: [{ id, title, sub, takeaway, ear?, steps: () => [ … ] }],   ids kursübergreifend eindeutig
      arcade: [{ id, name, gen, needs: levelId }],               Blitzrunde: gen() → { tag, prompt, options, answer, key?, play?, media? }
    }) */
-const COURSE_ORDER = ['notenlesen', 'dur', 'moll', 'umkehrungen', 'uebermaessig', 'septakkord', 'diktat'];
+const COURSE_ORDER = ['notensystem', 'notenlesen', 'dur', 'moll', 'umkehrungen', 'uebermaessig', 'septakkord', 'diktat'];
 const COURSE_DEFS = {};
 function defineCourse(def) { COURSE_DEFS[def.id] = def; }
 
@@ -110,8 +110,8 @@ const Steps = {
         marks.forEach(([m, cls, lab]) => kb.mark(m, cls, lab));
         const box = h('div', { class: 'st-media' });
         if (media) media(box, api);
-        box.append(kbWrap(kb.el),
-          max > 1 ? h('p', { class: 'hint' }, `Wähle ${max} Tasten. Ein zweiter Tipp auf eine Taste hebt die Wahl auf.`) : null);
+        box.append(kbWrap(kb.el));
+        if (max > 1) box.append(h('p', { class: 'hint' }, `Wähle ${max} Tasten. Ein zweiter Tipp auf eine Taste hebt die Wahl auf.`));
         body.append(box);
         api.onCheck(() => {
           const r = check(kb.selected);
