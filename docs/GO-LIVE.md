@@ -7,8 +7,10 @@ solange die Domain noch auf WordPress zeigt.
 
 - [ ] SSH-Zugang mit eigenem Benutzer, der nur ins Webverzeichnis schreiben darf
 - [ ] `rsync` auf dem Server verfügbar (am besten `rrsync` für den eingeschränkten Schlüssel)
-- [ ] Apache oder LiteSpeed mit `.htaccess` (`AllowOverride` mindestens `FileInfo`,
-      `Options`, `AuthConfig`, `Indexes`), `mod_headers`, `mod_alias`, `mod_mime`
+- [ ] Apache oder LiteSpeed mit `.htaccess` (`AllowOverride FileInfo AuthConfig Indexes
+      Options=Indexes,MultiViews,Includes,ExecCGI` – ein bloßes `Options` reicht nicht,
+      Apache 2.4 zählt MultiViews nicht zu „All“ und antwortet dann mit Fehler 500),
+      `mod_headers`, `mod_alias`, `mod_mime`
 - [ ] TLS-Zertifikat (z. B. Let's Encrypt) und Option „HTTPS erzwingen“
 - [ ] Vertrag zur Auftragsverarbeitung (Art. 28 DSGVO)
 - [ ] Angaben für die Datenschutzerklärung: Name und Anschrift des Hosters,
