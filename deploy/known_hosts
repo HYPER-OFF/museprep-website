@@ -1,4 +1,6 @@
-# PLATZHALTER – Host-Schlüssel des Webservers eintragen, sobald der Hoster feststeht.
+# Host-Schlüssel des Webservers (Hetzner Cloud, Server MusePrep1, Helsinki).
 # Ermitteln:  ssh-keyscan -t ed25519 <host>
-# Abgleichen: Fingerprint (ssh-keygen -lf) mit der Angabe des Hosters vergleichen.
-# Danach diese Kommentarzeilen stehen lassen und die Schlüsselzeile darunter einfügen.
+# Abgleichen: Fingerprint (ssh-keygen -lf) mit dem Wert bei der ersten Anmeldung vergleichen
+#             (hier: SHA256:kPZZVLS0Z356LbVgEwFvb7CymXZJ/+X0XSpIn0syHQg).
+# Der Upload läuft über die IPv4-Adresse (GitHub-Runner haben kein IPv6).
+37.27.83.171 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHrQAHuCTXVzAprtKckYWln0r7TY/fz+L5ZgwG/3BbIu
