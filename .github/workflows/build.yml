@@ -1,5 +1,12 @@
 # Build und Upload von museprep.com
 #
+# Start: Das Inhalts-Repository stößt nach jedem Speichern einen Lauf an
+# (workflow_dispatch mit anlass=inhalt, siehe docs/SETUP.md). Der stündliche
+# Zeitplan ist nur die Reserve, falls ein Anstoß ausfällt.
+#
+# 0. warten: Bei einem Anstoß aus dem Inhalts-Repository eine Minute warten.
+#            Ein neuerer Anstoß bricht den wartenden Lauf ab, so dass mehrere
+#            Speicherungen kurz hintereinander nur eine Freigabe-Mail auslösen.
 # 1. check:  Inhaltsstand ermitteln; ist er (mit diesem Website-Stand) schon
 #            gebaut, endet der Lauf hier.
 # 2. build:  Eingangsprüfung → Hugo (SHA-256-geprüft) → Ausgangsprüfung →
@@ -15,8 +22,8 @@ name: Build und Upload
 
 on:
   schedule:
-    # alle 15 Minuten, versetzt zur vollen Stunde
-    - cron: '4,19,34,49 * * * *'
+    # stündlich als Reserve, versetzt zur vollen Stunde
+    - cron: '4 * * * *'
   push:
     branches: [main]
   workflow_dispatch:
@@ -25,6 +32,11 @@ on:
         description: 'Auch bauen, wenn dieser Inhaltsstand schon gebaut wurde'
         type: boolean
         default: false
+      anlass:
+        description: 'inhalt = Anstoß aus dem Inhalts-Repository (wartet eine Minute)'
+        type: choice
+        options: [manuell, inhalt]
+        default: manuell
 
 permissions:
   contents: read
@@ -34,8 +46,21 @@ env:
   BASE_URL: https://museprep.com/
 
 jobs:
+  warten:
+    name: Weitere Speicherungen abwarten
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    concurrency:
+      group: museprep-warten
+      cancel-in-progress: true
+    steps:
+      - name: Eine Minute warten
+        if: github.event_name == 'workflow_dispatch' && inputs.anlass == 'inhalt'
+        run: sleep 60
+
   check:
     name: Inhaltsstand prüfen
+    needs: warten
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
@@ -43,7 +68,7 @@ jobs:
       content_sha: ${{ steps.sha.outputs.sha }}
     steps:
       # Ohne Lese-Schlüssel endet der Lauf mit einem Hinweis statt mit einem
-      # Fehler – sonst käme bis zur Einrichtung alle 15 Minuten eine Fehler-Mail.
+      # Fehler – sonst käme bis zur Einrichtung jede Stunde eine Fehler-Mail.
       - name: Einrichtung prüfen
         id: setup
         env:

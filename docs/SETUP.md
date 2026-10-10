@@ -23,8 +23,11 @@ gibt es bei privaten Repositories nur im Enterprise-Tarif.
 
 ## 2. Inhalts-Repository `museprep-content`
 
-- [ ] Settings → Actions → General → **Disable actions**. Das Inhalts-Repository
-      hat keinen Workflow und keinen Schlüssel.
+- [ ] Settings → Actions → General → **Allow HYPER-OFF actions and reusable
+      workflows**. Das Inhalts-Repository hat nur einen Workflow
+      (`.github/workflows/website-bauen.yml`), der ohne fremde Actions den Build
+      anstößt, siehe Abschnitt 5. Workflow permissions: **Read repository
+      contents and packages permissions**.
 - [ ] Settings → Collaborators → Autoren einladen. Jeder Autor braucht ein
       eigenes GitHub-Konto mit Zwei-Faktor-Anmeldung (bei persönlichen Konten
       lässt sich das nicht erzwingen, also beim Einladen nachfragen).
@@ -96,6 +99,28 @@ Zum Kopieren ohne Anzeige: `pbcopy < ~/museprep-keys/content-deploy.pub`
 Ohne diesen Secret endet jeder Lauf mit dem Hinweis „CONTENT_DEPLOY_KEY
 fehlt“, aber ohne Fehler-Mail.
 
+**Anstoß nach dem Speichern:** Zeitgesteuerte Läufe startet GitHub oft erst
+Stunden später. Deshalb stößt das Inhalts-Repository nach jedem Push selbst
+einen Lauf an; die Freigabe-Mail kommt dann nach etwa drei Minuten.
+
+- [ ] Als HYPER-OFF: Settings → Developer settings → Personal access tokens →
+      **Fine-grained tokens** → Generate new token
+  - Name `museprep-content: Website-Build anstoßen`, Resource owner HYPER-OFF
+  - Expiration: höchstens ein Jahr; Erinnerung zum Erneuern in den Kalender
+  - Repository access: **Only select repositories** → nur `museprep-website`
+  - Permissions → Repository permissions → **Actions: Read and write**,
+    sonst nichts (Metadata: Read-only setzt GitHub selbst)
+- [ ] `museprep-content` → Settings → Secrets and variables → Actions →
+      **New repository secret**: Name `WEBSITE_BUILD_TOKEN`, Inhalt der Token.
+      Den Token nirgends sonst speichern.
+
+Der Token kann Läufe starten, abbrechen, neu starten oder den Workflow
+abschalten. Inhalte ändern kann er nicht, und freigeben auch nicht: Dafür
+bräuchte er „Deployments: write“, das er nicht bekommt. Fehlt er oder ist er
+abgelaufen, holt der stündliche Lauf die Änderung ab. Im Inhalts-Repository kostet jeder
+Anstoß etwa eine Minute aus dem Freikontingent (privat), das Warten und Bauen
+läuft im öffentlichen Website-Repository und ist kostenlos.
+
 **Upload (sobald der Hoster feststeht):**
 
 - [ ] Beim Hoster: eigener SSH-Benutzer, der nur ins Webverzeichnis schreiben
@@ -119,9 +144,13 @@ in einem Passwortmanager sichern und aus `~/museprep-keys/` löschen.
 
 ## 6. Wie der Workflow arbeitet
 
-- **Start:** alle 15 Minuten, bei jedem Push auf `main` im Website-Repository
-  und per Hand (Actions → Build und Upload → Run workflow). Pull Requests
+- **Start:** nach jedem Push ins Inhalts-Repository (Anstoß, siehe Abschnitt
+  5), bei jedem Push auf `main` im Website-Repository, per Hand (Actions →
+  Build und Upload → Run workflow) und stündlich als Reserve. Pull Requests
   starten nichts.
+- **Warten:** Ein Anstoß aus dem Inhalts-Repository wartet eine Minute. Kommt
+  in der Zeit ein weiterer, wird der erste abgebrochen. Mehrere Speicherungen
+  kurz hintereinander ergeben so einen Lauf und eine Freigabe-Mail.
 - **Nur einmal bauen:** Ist der Inhaltsstand mit dem aktuellen Website-Stand
   schon gebaut, endet der Lauf nach wenigen Sekunden. Das gilt auch, wenn der
   Build gescheitert oder die Freigabe abgelehnt wurde. Neu bauen: „Run
@@ -148,8 +177,8 @@ in einem Passwortmanager sichern und aus `~/museprep-keys/` löschen.
 
 ## 7. Abnahme Paket 5
 
-1. Eine Änderung in Pages CMS speichern. Innerhalb von 15 Minuten startet ein
-   Lauf, baut und wartet auf Freigabe.
+1. Eine Änderung in Pages CMS speichern. Sofort startet ein Lauf, wartet eine
+   Minute, baut und wartet auf Freigabe (Mail nach etwa drei Minuten).
 2. **Ablehnen** → die Live-Seite bleibt unverändert.
 3. Neue Änderung speichern, **freigeben** → die Änderung ist live, die
    Kontrolle meldet die Content-Security-Policy.

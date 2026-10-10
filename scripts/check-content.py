@@ -45,6 +45,9 @@ MAX_IMAGE_PIXELS = 40_000_000
 
 CMS_CONFIG = ".pages.yml"
 CONTENT_DIR = "content"
+# Einzige Datei unter .github/: stößt nach jedem Speichern den Build an
+# (docs/SETUP.md). Sie wird nicht gebaut, nur ihr Platz ist festgelegt.
+TRIGGER_WORKFLOW = "website-bauen.yml"
 
 NAME_DIR = re.compile(r"^[a-z0-9-]+$")
 NAME_MD = re.compile(r"^(_?)index\.(de|en)\.md$")
@@ -375,6 +378,25 @@ def walk_content(report, directory, allowed_shortcodes, is_root):
         report.add(directory, "index.*.md und _index.*.md dürfen nicht im selben Ordner liegen")
 
 
+def check_github_dir(report, directory):
+    """.github/ darf nur workflows/website-bauen.yml enthalten."""
+    for entry in sorted(os.scandir(directory), key=lambda e: e.name):
+        kind = entry_kind(entry)
+        if entry.name == "workflows" and kind == "dir":
+            for workflow in sorted(os.scandir(entry.path), key=lambda e: e.name):
+                workflow_kind = entry_kind(workflow)
+                if workflow.name == TRIGGER_WORKFLOW and workflow_kind == "file":
+                    report.checked += 1
+                elif workflow_kind not in ("dir", "file"):
+                    report.add(workflow.path, workflow_kind)
+                else:
+                    report.add(workflow.path, "in .github/workflows/ ist nur %s erlaubt" % TRIGGER_WORKFLOW)
+        elif kind not in ("dir", "file"):
+            report.add(entry.path, kind)
+        else:
+            report.add(entry.path, "in .github/ ist nur workflows/%s erlaubt" % TRIGGER_WORKFLOW)
+
+
 def check_repository(root, allowed_shortcodes):
     report = Report(root)
     content = os.path.join(root, CONTENT_DIR)
@@ -385,6 +407,8 @@ def check_repository(root, allowed_shortcodes):
         kind = entry_kind(entry)
         if entry.name == CONTENT_DIR and kind == "dir":
             found_content = True
+        elif entry.name == ".github" and kind == "dir":
+            check_github_dir(report, entry.path)
         elif entry.name == CMS_CONFIG and kind == "file":
             report.checked += 1
             data = read_limited(report, entry.path, MAX_CONFIG_BYTES, "Konfiguration")
@@ -396,7 +420,7 @@ def check_repository(root, allowed_shortcodes):
         elif kind not in ("dir", "file"):
             report.add(entry.path, kind)
         else:
-            report.add(entry.path, "neben content/ ist nur %s erlaubt" % CMS_CONFIG)
+            report.add(entry.path, "neben content/ sind nur %s und .github/ erlaubt" % CMS_CONFIG)
     if not found_content:
         report.add(content, "Ordner content/ fehlt")
     else:

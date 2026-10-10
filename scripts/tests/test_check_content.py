@@ -316,13 +316,42 @@ class CheckContentTest(unittest.TestCase):
         self.assertFails("versteckte")
 
     def test_extra_files_in_repo_root(self):
-        for rel in ("README.md", "cms.config.json", ".github/workflows/x.yml", "static/x.js"):
+        for rel in ("README.md", "cms.config.json", ".gitlab-ci.yml", "static/x.js"):
             with self.subTest(rel=rel):
                 self.write(rel, "x")
-                self.assertFails("neben content/ ist nur .pages.yml erlaubt")
+                self.assertFails("neben content/ sind nur .pages.yml und .github/ erlaubt")
                 top = rel.split("/")[0]
                 full = self.path(top)
                 shutil.rmtree(full) if os.path.isdir(full) else os.remove(full)
+
+    def test_trigger_workflow_passes(self):
+        self.write(".github/workflows/website-bauen.yml", "name: Website bauen\n")
+        self.assertPasses()
+
+    def test_other_files_in_github_dir(self):
+        cases = {
+            ".github/workflows/x.yml": "in .github/workflows/ ist nur website-bauen.yml erlaubt",
+            ".github/workflows/sub/website-bauen.yml": "in .github/workflows/ ist nur website-bauen.yml erlaubt",
+            ".github/dependabot.yml": "in .github/ ist nur workflows/website-bauen.yml erlaubt",
+            ".github/actions/x/action.yml": "in .github/ ist nur workflows/website-bauen.yml erlaubt",
+        }
+        for rel, expected in cases.items():
+            with self.subTest(rel=rel):
+                self.write(".github/workflows/website-bauen.yml", "name: Website bauen\n")
+                self.write(rel, "x")
+                self.assertFails(expected)
+                shutil.rmtree(self.path(".github"))
+
+    def test_github_dir_symlinks(self):
+        self.write("ziel.yml", "x")
+        os.makedirs(self.path(".github/workflows"))
+        os.symlink(self.path("ziel.yml"), self.path(".github/workflows/website-bauen.yml"))
+        self.assertFails("Symlinks sind nicht erlaubt")
+        os.remove(self.path("ziel.yml"))
+        shutil.rmtree(self.path(".github"))
+        os.makedirs(self.path(".github"))
+        os.symlink(self.path("content"), self.path(".github/workflows"))
+        self.assertFails("Symlinks sind nicht erlaubt")
 
     def test_cms_config_too_large(self):
         self.write(".pages.yml", "#" * (65 * 1024))
